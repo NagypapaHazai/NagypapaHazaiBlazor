@@ -1,0 +1,35 @@
+﻿@page "/properties"
+@using Microsoft.EntityFrameworkCore
+@using NagypapaHazaiBlazor.MODELS;
+@inject NagypapaContext Db
+
+<h2 class="text-3xl font-bold mb-4">Ingatlanok</h2>
+
+@if (properties is null)
+{
+    <p>Betöltés...</p>
+}
+else
+{
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        @foreach (var p in properties)
+        {
+            <div class="bg-white rounded-xl shadow p-4">
+                <h3 class="font-bold text-lg mb-1">@p.Name</h3>
+                <p class="text-sm text-gray-600 mb-1">📍 @p.Location</p>
+                <p class="text-sm mb-2">@p.Description</p>
+                <p class="text-xs text-gray-500 mb-2">Kapacitás: @p.Capacity fő</p>
+                <span class="text-xs px-2 py-1 rounded-full bg-gray-100">@p.Status</span>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Property>? properties;
+
+    protected override async Task OnInitializedAsync()
+    {
+        properties = await Db.Properties.ToListAsync();
+    }
+}

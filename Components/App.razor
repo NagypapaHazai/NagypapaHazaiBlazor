@@ -1,0 +1,38 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="NagypapaHazaiBlazor.styles.css" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="~/favicon.ico">
+
+    <!-- 1. TAILWIND (már biztos benne van) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- 2. FAVICON emoji (opcionális - eltünteti a favicon 404 hibát) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏡</text></svg>">
+
+    <!-- 3. Warning elrejtése (opcionális) -->
+    <script>
+        // Ez elrejti a Tailwind CDN figyelmeztetést
+        const originalWarn = console.warn;
+        console.warn = function(msg) {
+            if (msg && msg.includes('cdn.tailwindcss.com')) return;
+            originalWarn.apply(console, arguments);
+        };
+    </script>
+
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

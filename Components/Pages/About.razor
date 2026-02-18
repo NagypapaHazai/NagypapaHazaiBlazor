@@ -1,0 +1,90 @@
+﻿@page "/about"
+
+<div class="container mx-auto px-4 py-12 max-w-5xl">
+
+    <!-- Fejléc -->
+    <div class="text-center mb-16">
+        <h1 class="text-4xl md:text-5xl font-bold text-amber-900 mb-4 font-serif">
+            A Nagypapa Házai története
+        </h1>
+        <p class="text-xl text-amber-700 max-w-2xl mx-auto">
+            Hogyan lett egy régi családi örökségből közösségi élmény.
+        </p>
+    </div>
+
+    <!-- 1. Szekció: A küldetés (Kép + Szöveg) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mb-20">
+        <div class="order-2 md:order-1">
+            <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                 alt="Vidéki ház hangulat"
+                 class="rounded-2xl shadow-xl w-full h-80 object-cover transform hover:scale-[1.02] transition-transform duration-500" />
+        </div>
+        <div class="order-1 md:order-2">
+            <h2 class="text-3xl font-bold text-amber-800 mb-6 flex items-center gap-3">
+                <span class="text-4xl">🏡</span> Küldetésünk
+            </h2>
+            <p class="text-gray-700 text-lg leading-relaxed mb-4">
+                Hiszünk abban, hogy a vidéki élet nemcsak a csendről szól, hanem a közösségről is. Célunk, hogy megőrizzük a régi épületek hangulatát, miközben új élettel töltjük meg őket.
+            </p>
+            <p class="text-gray-700 text-lg leading-relaxed">
+                Nem egyszerű szállást kínálunk, hanem élményt: lehetőséget arra, hogy kiszakadj a városi nyüzsgésből, és visszatalálj a természethez és önmagadhoz.
+            </p>
+        </div>
+    </div>
+
+    <!-- 2. Szekció: Értékek (3 kártya) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-amber-100 text-center hover:shadow-xl transition-shadow">
+            <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                🌿
+            </div>
+            <h3 class="text-xl font-bold text-amber-900 mb-3">Fenntarthatóság</h3>
+            <p class="text-gray-600">
+                Házaink felújításakor természetes anyagokat használunk, és törekszünk a környezettudatos működésre.
+            </p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-amber-100 text-center hover:shadow-xl transition-shadow">
+            <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                🤝
+            </div>
+            <h3 class="text-xl font-bold text-amber-900 mb-3">Közösség</h3>
+            <p class="text-gray-600">
+                A "Nagypapa Házai" nemcsak falakból áll, hanem az emberekből, akik megtöltik élettel és történetekkel.
+            </p>
+        </div>
+
+        <div class="bg-white p-8 rounded-2xl shadow-lg border border-amber-100 text-center hover:shadow-xl transition-shadow">
+            <div class="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
+                🕰️
+            </div>
+            <h3 class="text-xl font-bold text-amber-900 mb-3">Hagyomány</h3>
+            <p class="text-gray-600">
+                Tiszteljük a múltat. Minden bútor, minden gerenda mesél valamit azokról, akik előttünk jártak itt.
+            </p>
+        </div>
+    </div>
+
+    <!-- 3. Szekció: Csapat / Kapcsolat -->
+    <div class="bg-amber-50 rounded-3xl p-12 text-center shadow-inner">
+        <h2 class="text-3xl font-bold text-amber-900 mb-6">Szeretnél többet tudni?</h2>
+        <p class="text-xl text-amber-800 mb-8 max-w-2xl mx-auto">
+            Keress minket bátran, ha kérdésed van a foglalással, vagy csak megosztanád velünk az ötleteidet!
+        </p>
+        <div class="flex flex-col md:flex-row justify-center gap-6 text-lg font-medium text-amber-900">
+            <div class="flex items-center justify-center gap-2 bg-white px-6 py-3 rounded-full shadow-sm">
+                📧 info@nagypapahazai.hu
+            </div>
+            <div class="flex items-center justify-center gap-2 bg-white px-6 py-3 rounded-full shadow-sm">
+                📞 +36 20 123 4567
+            </div>
+        </div>
+
+        <div class="mt-10">
+            <a href="/bookings/create" class="inline-block bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 text-lg">
+                Foglalj most!
+            </a>
+        </div>
+    </div>
+
+</div>
