@@ -22,3 +22,37 @@
     </nav>
 </div>
 
+@inject NagypapaHazaiBlazor.Services.AuthState Auth
+@inject NavigationManager Nav
+
+@if (Auth.IsLoggedIn)
+{
+    <span>@Auth.CurrentUser!.UserName</span>
+    <button class="btn btn-link" @onclick="Logout">Kijelentkezés</button>
+}
+else
+{
+    <NavLink class="nav-link" href="/login">Bejelentkezés</NavLink>
+    <NavLink class="nav-link" href="/register">Regisztráció</NavLink>
+}
+
+@code {
+    private void Logout()
+    {
+        Auth.Logout();
+        Nav.NavigateTo("/");
+    }
+}
+
+@inject NagypapaHazaiBlazor.Services.AuthState Auth
+@inject NavigationManager Nav
+
+@if (!Auth.IsLoggedIn)
+{
+    <p>Az oldal megtekintéséhez be kell jelentkezned.</p>
+    @* vagy: Nav.NavigateTo("/login"); *@
+}
+else
+{
+    <!-- itt jön a valódi tartalom -->
+}

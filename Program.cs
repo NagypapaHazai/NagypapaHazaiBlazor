@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NagypapaHazai.Web.Data;
 using NagypapaHazaiBlazor.Components;
+using NagypapaHazaiBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,8 @@ builder.Services.AddDbContext<NagypapaContext>(options =>
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<AuthState>();
 
 var app = builder.Build();
 

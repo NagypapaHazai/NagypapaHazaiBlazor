@@ -7,6 +7,7 @@ namespace NagypapaHazaiBlazor.VIEW
         public List<Property> Properties { get; set; } = [];
         public List<Event> Events { get; set; } = [];
         public List<Booking> Bookings { get; set; } = [];
+        public List<User> Users { get; set; } = [];
     }
 
 }

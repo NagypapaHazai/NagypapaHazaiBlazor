@@ -9,6 +9,8 @@ public class NagypapaContext : DbContext
     public DbSet<Property> Properties => Set<Property>();
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Booking> Bookings => Set<Booking>();
+    public DbSet<User> Users { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
