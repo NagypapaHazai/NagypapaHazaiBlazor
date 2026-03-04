@@ -58,4 +58,4 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-app.Run();//com
+app.Run();//commit proba megint!!!
