@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NagypapaHazaiBlazor.Data;
 
@@ -11,9 +12,11 @@ using NagypapaHazaiBlazor.Data;
 namespace NagypapaHazaiBlazor.Migrations
 {
     [DbContext(typeof(NagypapaContext))]
-    partial class NagypapaContextModelSnapshot : ModelSnapshot
+    [Migration("20260304133022_AddUserNavToBooking")]
+    partial class AddUserNavToBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,6 +36,9 @@ namespace NagypapaHazaiBlazor.Migrations
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("EventId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ExchangeOffer")
                         .HasColumnType("nvarchar(max)");
 
@@ -46,15 +52,16 @@ namespace NagypapaHazaiBlazor.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EventId");
+
                     b.HasIndex("PropertyId")
                         .HasDatabaseName("IX_Bookings_PropertyId");
-
-                    b.HasIndex("UserId");
 
                     b.HasIndex("StartDate", "EndDate")
                         .HasDatabaseName("IX_Bookings_Date");
@@ -74,13 +81,12 @@ namespace NagypapaHazaiBlazor.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("EndDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("MaxParticipants")
+                    b.Property<int?>("MaxParticipants")
                         .HasColumnType("int");
 
                     b.Property<int>("PropertyId")
@@ -116,7 +122,6 @@ namespace NagypapaHazaiBlazor.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
@@ -166,21 +171,19 @@ namespace NagypapaHazaiBlazor.Migrations
 
             modelBuilder.Entity("NagypapaHazaiBlazor.MODELS.Booking", b =>
                 {
+                    b.HasOne("NagypapaHazaiBlazor.MODELS.Event", "Event")
+                        .WithMany("Bookings")
+                        .HasForeignKey("EventId");
+
                     b.HasOne("NagypapaHazaiBlazor.MODELS.Property", "Property")
                         .WithMany("Bookings")
                         .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("NagypapaHazaiBlazor.MODELS.User", "User")
-                        .WithMany("Bookings")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("Event");
 
                     b.Navigation("Property");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("NagypapaHazaiBlazor.MODELS.Event", b =>
@@ -188,10 +191,15 @@ namespace NagypapaHazaiBlazor.Migrations
                     b.HasOne("NagypapaHazaiBlazor.MODELS.Property", "Property")
                         .WithMany("Events")
                         .HasForeignKey("PropertyId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Property");
+                });
+
+            modelBuilder.Entity("NagypapaHazaiBlazor.MODELS.Event", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 
             modelBuilder.Entity("NagypapaHazaiBlazor.MODELS.Property", b =>
@@ -199,11 +207,6 @@ namespace NagypapaHazaiBlazor.Migrations
                     b.Navigation("Bookings");
 
                     b.Navigation("Events");
-                });
-
-            modelBuilder.Entity("NagypapaHazaiBlazor.MODELS.User", b =>
-                {
-                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,7 @@
 ﻿@page "/bookings"
 @using Microsoft.EntityFrameworkCore
 @using NagypapaHazaiBlazor.MODELS
+@using NagypapaHazaiBlazor.Data
 @inject NagypapaContext Db
 
 <div class="container mx-auto px-4 py-8">
@@ -43,50 +44,46 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach (var booking in bookings)
-{
-    <tr class="hover:bg-gray-50 transition-colors">
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm font-medium text-gray-900">@booking.UserName</div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">
-                @(booking.Property?.Name ?? "Ismeretlen")
-            </div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <div class="text-sm text-gray-900">
-                <!-- JAVÍTVA: Nullable dátumok kezelése -->
-                @(booking.StartDate.HasValue ? booking.StartDate.Value.ToString("yyyy. MM. dd.") : "?") - 
-                @(booking.EndDate.HasValue ? booking.EndDate.Value.ToString("yyyy. MM. dd.") : "?")
-            </div>
-            <div class="text-xs text-gray-500">
-                <!-- JAVÍTVA: Nullable kivonás -->
-                @if (booking.StartDate.HasValue && booking.EndDate.HasValue)
-                {
-                    @((booking.EndDate.Value - booking.StartDate.Value).Days) <span>éjszaka</span>
-                }
-            </div>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                @(booking.Status == "confirmed" ? "bg-green-100 text-green-800" : 
-                  booking.Status == "cancelled" ? "bg-red-100 text-red-800" : 
-                  "bg-yellow-100 text-yellow-800")">
-                @(booking.Status == "confirmed" ? "Megerősítve" : 
-                  booking.Status == "cancelled" ? "Törölve" : "Függőben")
-            </span>
-        </td>
-        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-            <button class="text-blue-600 hover:text-blue-900 mr-3" title="Szerkesztés">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="text-red-600 hover:text-red-900" title="Törlés" @onclick="() => DeleteBooking(booking)">
-                <i class="fas fa-trash-alt"></i>
-            </button>
-        </td>
-    </tr>
-}
+                        {
+                            <tr class="hover:bg-gray-50 transition-colors">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @* ✅ User navigációs property-n keresztül *@
+                                    <div class="text-sm font-medium text-gray-900">@booking.User?.UserName</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        @(booking.Property?.Name ?? "Ismeretlen")
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        @(booking.StartDate?.ToString("yyyy. MM. dd.") ?? "?") -
+                                        @(booking.EndDate?.ToString("yyyy. MM. dd.") ?? "?")
+                                    </div>
+                                    <div class="text-xs text-gray-500">
+                                        @if (booking.StartDate.HasValue && booking.EndDate.HasValue)
+                                        {
+                                            @((booking.EndDate.Value - booking.StartDate.Value).Days) <span>éjszaka</span>
                                         }
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        @(booking.Status == "approved" ? "bg-green-100 text-green-800" :
+                                          booking.Status == "cancelled" ? "bg-red-100 text-red-800" :
+                                          "bg-yellow-100 text-yellow-800")">
+                                        @(booking.Status == "approved" ? "Jóváhagyva" :
+                                          booking.Status == "cancelled" ? "Törölve" : "Függőben")
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button class="text-red-600 hover:text-red-900" title="Törlés"
+                                            @onclick="() => DeleteBooking(booking)">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
                     </tbody>
                 </table>
             </div>
@@ -99,18 +96,17 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Betöltjük a foglalásokat és hozzájuk kapcsoljuk (Include) az ingatlan adatait is
         bookings = await Db.Bookings
-            .Include(b => b.Property)
+            .Include(b => b.User)       // ← ÚJ: UserName-hez kell
+            .Include(b => b.Property)   // ← Property.Name-hez kell
             .OrderByDescending(b => b.StartDate)
             .ToListAsync();
     }
 
     private async Task DeleteBooking(Booking booking)
     {
-        // Egyszerű törlés megerősítés nélkül (fejleszthető JS interop-pal)
         Db.Bookings.Remove(booking);
         await Db.SaveChangesAsync();
-        bookings?.Remove(booking); // Frissítjük a listát a felületen is
+        bookings?.Remove(booking);
     }
 }

@@ -2,46 +2,55 @@
 using Microsoft.EntityFrameworkCore;
 using NagypapaHazaiBlazor.MODELS;
 
-public class NagypapaContext : DbContext
+namespace NagypapaHazaiBlazor.Data
 {
-    public NagypapaContext(DbContextOptions<NagypapaContext> options) : base(options) { }
-
-    public DbSet<Property> Properties => Set<Property>();
-    public DbSet<Event> Events => Set<Event>();
-    public DbSet<Booking> Bookings => Set<Booking>();
-    public DbSet<User> Users { get; set; }
-
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    public class NagypapaContext : DbContext
     {
-        base.OnModelCreating(modelBuilder);
+        public NagypapaContext(DbContextOptions<NagypapaContext> options)
+            : base(options) { }
 
-        modelBuilder.Entity<Event>()
-            .HasOne(e => e.Property)
-            .WithMany(p => p.Events)
-            .HasForeignKey(e => e.PropertyId);
+        public DbSet<User> Users { get; set; }
+        public DbSet<Property> Properties { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Event> Events { get; set; }
 
-        modelBuilder.Entity<Booking>()
-            .HasOne(b => b.Property)
-            .WithMany(p => p.Bookings)
-            .HasForeignKey(b => b.PropertyId);
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Booking>()
-            .HasOne(b => b.Event)
-            .WithMany(e => e.Bookings)
-            .HasForeignKey(b => b.EventId)
-            .IsRequired(false);
+            // User → Bookings
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.User)
+                .WithMany(u => u.Bookings)
+                .HasForeignKey(b => b.UserId)
+                .OnDelete(DeleteBehavior.Restrict); // user törlésénél ne törölje a bookingokat
 
-        modelBuilder.Entity<Event>()
-            .HasIndex(e => e.PropertyId)
-            .HasDatabaseName("IX_Events_PropertyId");
+            // Property → Bookings
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Property)
+                .WithMany(p => p.Bookings)
+                .HasForeignKey(b => b.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Booking>()
-            .HasIndex(b => b.PropertyId)
-            .HasDatabaseName("IX_Bookings_PropertyId");
+            // Property → Events
+            modelBuilder.Entity<Event>()
+                .HasOne(e => e.Property)
+                .WithMany(p => p.Events)
+                .HasForeignKey(e => e.PropertyId)
+                .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<Booking>()
-            .HasIndex(b => new { b.StartDate, b.EndDate })
-            .HasDatabaseName("IX_Bookings_Date");
+            // Indexek a gyorsabb lekérdezéshez
+            modelBuilder.Entity<Event>()
+                .HasIndex(e => e.PropertyId)
+                .HasDatabaseName("IX_Events_PropertyId");
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(b => b.PropertyId)
+                .HasDatabaseName("IX_Bookings_PropertyId");
+
+            modelBuilder.Entity<Booking>()
+                .HasIndex(b => new { b.StartDate, b.EndDate })
+                .HasDatabaseName("IX_Bookings_Date");
+        }
     }
 }

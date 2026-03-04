@@ -2,6 +2,8 @@
 @using Microsoft.EntityFrameworkCore
 @using NagypapaHazaiBlazor.MODELS
 @using System.ComponentModel.DataAnnotations
+@using BCrypt.Net
+@using NagypapaHazaiBlazor.Data
 @inject NagypapaContext Db
 @inject NagypapaHazaiBlazor.Services.AuthState Auth
 @inject NavigationManager Nav
@@ -10,7 +12,8 @@
 
 <EditForm Model="_model"
           OnValidSubmit="HandleLogin"
-          FormName="login-form">
+          FormName="login-form"
+          method="post">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -29,28 +32,33 @@
 
 @if (!string.IsNullOrEmpty(_message))
 {
-    <p>@_message</p>
+    <p style="color:red">@_message</p>
 }
 
 @code {
-    private LoginModel _model = new();
+    [SupplyParameterFromForm]
+    private LoginModel _model { get; set; } = new();
+
     private string _message = "";
 
     public class LoginModel
     {
-        [Required, EmailAddress]
+        [Required(ErrorMessage = "Az email megadása kötelező.")]
+        [EmailAddress(ErrorMessage = "Érvénytelen email cím.")]
         public string Email { get; set; } = "";
 
-        [Required]
+        [Required(ErrorMessage = "A jelszó megadása kötelező.")]
         public string Password { get; set; } = "";
     }
 
     private async Task HandleLogin()
     {
+        // Először email alapján keresünk
         var user = await Db.Users
-            .FirstOrDefaultAsync(u => u.Email == _model.Email && u.PasswordHash == _model.Password);
+            .FirstOrDefaultAsync(u => u.Email == _model.Email);
 
-        if (user == null)
+        // Majd BCrypt-tel ellenőrzünk jelszót
+        if (user == null || !BCrypt.Verify(_model.Password, user.PasswordHash))
         {
             _message = "Hibás email vagy jelszó.";
             Auth.SetUser(null);
@@ -58,7 +66,6 @@
         }
 
         Auth.SetUser(user);
-        _message = "Sikeres bejelentkezés!";
-        Nav.NavigateTo("/"); // vagy ahová szeretnéd
+        Nav.NavigateTo("/");
     }
 }

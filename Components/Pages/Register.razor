@@ -1,6 +1,7 @@
 ﻿@page "/register"
 @using NagypapaHazaiBlazor.MODELS
 @using System.ComponentModel.DataAnnotations
+@using NagypapaHazaiBlazor.Data
 @inject NagypapaContext Db
 @inject NavigationManager Nav
 
@@ -8,7 +9,8 @@
 
 <EditForm Model="_model"
           OnValidSubmit="HandleRegister"
-          FormName="register-form">
+          FormName="register-form"
+          method="post">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
@@ -36,7 +38,9 @@
 }
 
 @code {
-    private RegisterModel _model = new();
+    [SupplyParameterFromForm]
+    private RegisterModel _model { get; set; } = new();
+
     private string _message = "";
 
     public class RegisterModel
@@ -55,17 +59,26 @@
 
     private async Task HandleRegister()
     {
+        // Ellenőrzés: foglalt-e már a felhasználónév vagy email
+        bool alreadyExists = Db.Users.Any(u =>
+            u.UserName == _model.UserName || u.Email == _model.Email);
+
+        if (alreadyExists)
+        {
+            _message = "Ez a felhasználónév vagy email már foglalt!";
+            return;
+        }
+
         var user = new User
         {
             UserName = _model.UserName,
             Email = _model.Email,
-            PasswordHash = _model.Password
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(_model.Password)
         };
 
         Db.Users.Add(user);
         await Db.SaveChangesAsync();
 
-        _message = "Sikeres regisztráció!";
-        Nav.NavigateTo("/");
+        Nav.NavigateTo("/login");
     }
 }
