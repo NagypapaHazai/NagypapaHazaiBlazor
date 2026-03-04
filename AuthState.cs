@@ -78,9 +78,9 @@ namespace NagypapaHazaiBlazor.Services
             {
                 if (user == null)
                 {
-                    Session?.Remove("UserId");
-                    Session?.Remove("UserName");
-                    Session?.Remove("Email");
+                    Session?.Remove("UserId");    
+                    Session?.Remove("UserName");  
+                    Session?.Remove("Email");     
                 }
                 else
                 {
@@ -91,5 +91,6 @@ namespace NagypapaHazaiBlazor.Services
             }
             catch { }
         }
+
     }
 }

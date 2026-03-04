@@ -25,23 +25,50 @@
         </div>
 
         <div class="nav-item px-3">
-            @if (Auth.IsLoggedIn)
-            {
-                <span class="nav-link text-white">👤 @Auth.CurrentUser!.UserName</span>
-                <button class="btn btn-outline-light btn-sm w-100 mt-1" @onclick="Logout">
-                    Kijelentkezés
+            <NavLink class="nav-link" href="properties">
+                <span class="bi bi-building" aria-hidden="true"></span> Ingatlanok
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="events">
+                <span class="bi bi-calendar-event" aria-hidden="true"></span> Események
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="bookings">
+                <span class="bi bi-journal-check" aria-hidden="true"></span> Foglalások
+            </NavLink>
+        </div>
+
+        @if (Auth.IsLoggedIn)
+        {
+            <div class="nav-item px-3 mt-2">
+                <span class="nav-link text-white opacity-75">
+                    👤 @Auth.CurrentUser!.UserName
+                </span>
+            </div>
+            <div class="nav-item px-3">
+                <button class="btn btn-outline-light btn-sm w-100"
+                        @onclick="Logout">
+                    🚪 Kijelentkezés
                 </button>
-            }
-            else
-            {
+            </div>
+        }
+        else
+        {
+            <div class="nav-item px-3">
                 <NavLink class="nav-link" href="/login">
                     <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> Bejelentkezés
                 </NavLink>
+            </div>
+            <div class="nav-item px-3">
                 <NavLink class="nav-link" href="/register">
                     <span class="bi bi-person-plus" aria-hidden="true"></span> Regisztráció
                 </NavLink>
-            }
-        </div>
+            </div>
+        }
 
     </nav>
 </div>
@@ -50,6 +77,6 @@
     private void Logout()
     {
         Auth.SetUser(null);
-        Nav.NavigateTo("/");
+        Nav.NavigateTo("/", forceLoad: true); // ← forceLoad: true kötelező!
     }
 }
