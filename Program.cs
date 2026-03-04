@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using NagypapaHazai.Web.Data;
+using NagypapaHazaiBlazor.Data;
 using NagypapaHazaiBlazor.Components;
+using NagypapaHazaiBlazor.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,17 @@ builder.Services.AddDbContext<NagypapaContext>(options =>
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddScoped<AuthState>();
 
 var app = builder.Build();
 
@@ -25,6 +38,7 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+app.UseSession();
 app.UseAntiforgery();
 
 app.MapRazorComponents<App>()

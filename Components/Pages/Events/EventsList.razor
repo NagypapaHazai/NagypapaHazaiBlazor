@@ -1,7 +1,8 @@
 ﻿@page "/events"
 @using Microsoft.EntityFrameworkCore
 @using NagypapaHazaiBlazor.MODELS
-@inject NagypapaContext DbContext
+@using NagypapaHazaiBlazor.Data
+@inject NagypapaContext Db
 
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-8">
@@ -30,16 +31,12 @@
             {
                 <div class="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 group border border-gray-100">
 
-                    <!-- Kép vagy ikon rész -->
                     <div class="relative h-48 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-
                         <div class="text-white opacity-90 transform group-hover:scale-110 transition-transform duration-300">
                             <i class="fas fa-glass-cheers text-6xl"></i>
                         </div>
 
-                        <!-- Dátum "badge" -->
                         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm p-2 text-center min-w-[60px]">
-                            <!-- JAVÍTVA: Null check (.Value használata) -->
                             <div class="text-xl font-bold text-blue-600 leading-none">
                                 @(eventItem.StartDate.HasValue? eventItem.StartDate.Value.Day : "?")
                             </div>
@@ -49,7 +46,6 @@
                         </div>
                     </div>
 
-                    <!-- Tartalom rész -->
                     <div class="p-6">
                         <div class="mb-4">
                             <h3 class="text-xl font-bold text-gray-800 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
@@ -60,15 +56,13 @@
                             </p>
                         </div>
 
-                        <!-- Adatok alsó sáv -->
                         <div class="pt-4 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
                             <div class="flex items-center gap-2" title="Időtartam">
                                 <i class="far fa-clock text-blue-400"></i>
-                                <!-- JAVÍTVA: Biztonságos kivonás -->
                                 <span>
                                     @if (eventItem.StartDate.HasValue && eventItem.EndDate.HasValue)
                                     {
-                                        @((eventItem.EndDate.Value - eventItem.StartDate.Value).Days + 1)
+                                        @((eventItem.EndDate.Value.DayNumber - eventItem.StartDate.Value.DayNumber + 1))
                                     }
                                     else
                                     {
@@ -80,14 +74,14 @@
 
                             <div class="flex items-center gap-2" title="Férőhely">
                                 <i class="fas fa-users text-blue-400"></i>
-                                <!-- JAVÍTVA: MaxParticipants is nullable -->
-                                <span>Max: @(eventItem.MaxParticipants ?? 0) fő</span>
+                                @* ✅ MaxParticipants int, nem nullable – ?? nélkül *@
+                                <span>Max: @eventItem.MaxParticipants fő</span>
                             </div>
                         </div>
 
-                        <!-- Gomb -->
                         <div class="mt-4 pt-2">
-                            <a href="/events/details/@eventItem.Id" class="block w-full text-center py-2 px-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold rounded-lg transition-colors duration-200">
+                            <a href="/events/details/@eventItem.Id"
+                               class="block w-full text-center py-2 px-4 bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold rounded-lg transition-colors duration-200">
                                 Részletek <i class="fas fa-arrow-right ml-1 text-xs"></i>
                             </a>
                         </div>
@@ -103,7 +97,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        events = await DbContext.Events
+        events = await Db.Events        // ✅ DbContext → Db
             .OrderBy(e => e.StartDate)
             .ToListAsync();
     }

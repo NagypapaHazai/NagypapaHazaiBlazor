@@ -1,0 +1,11 @@
+﻿@page "/logout"
+@inject NagypapaHazaiBlazor.Services.AuthState Auth
+@inject NavigationManager Nav
+
+@code {
+    protected override void OnInitialized()
+    {
+        Auth.SetUser(null);
+        Nav.NavigateTo("/"); //megoldva
+    }
+}
