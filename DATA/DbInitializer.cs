@@ -11,6 +11,21 @@ namespace NagypapaHazaiBlazor.Data
 
             if (context.Properties.Any()) return;
 
+            if (!context.Users.Any(u => u.Role == "Admin"))
+            {
+                var adminUser = new User
+                {
+                    UserName = "admin",
+                    Email = "admin@nagypapahazai.hu",
+                    // A jelszót hashelve mentjük el! Jelszó: Admin123!
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                    Role = "Admin"
+                };
+
+                context.Users.Add(adminUser);
+                context.SaveChanges();
+            }
+
             var properties = new Property[]
             {
                 new Property

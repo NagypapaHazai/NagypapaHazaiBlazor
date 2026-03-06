@@ -1,6 +1,6 @@
 ﻿@inherits LayoutComponentBase
-@inject NagypapaHazaiBlazor.Services.AuthState Auth   
-@inject NavigationManager Nav                          
+@inject NagypapaHazaiBlazor.Services.AuthState Auth
+@inject NavigationManager Nav
 
 <nav class="bg-gradient-to-r from-amber-800 via-orange-800 to-amber-800 text-white shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4">
@@ -33,12 +33,20 @@
                     Rólunk
                 </a>
 
-                @* ← CSERÉLT RÉSZ *@
                 @if (Auth.IsLoggedIn)
                 {
                     <span class="text-amber-100 font-medium">
                         👤 @Auth.CurrentUser?.UserName
                     </span>
+
+                    @* ADMIN GOMB (Desktop) *@
+                    @if (Auth.IsAdmin)
+                    {
+                        <a href="/admin" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors text-white font-bold">
+                            🛠️ Admin
+                        </a>
+                    }
+
                     <a href="/logout"
                        class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg transition-colors text-white font-bold">
                         Kijelentkezés
@@ -73,8 +81,17 @@
                 <NavLink href="/events" class="block py-2 hover:bg-amber-700 px-3 rounded">Események</NavLink>
                 <NavLink href="/bookings" class="block py-2 hover:bg-amber-700 px-3 rounded">Foglalások</NavLink>
                 <a href="/about" class="block py-2 hover:bg-amber-700 px-3 rounded">Rólunk</a>
+
                 @if (Auth.IsLoggedIn)
                 {
+                    @* ADMIN GOMB (Mobil) *@
+                    @if (Auth.IsAdmin)
+                    {
+                        <a href="/admin" class="block py-2 hover:bg-purple-700 bg-purple-600 px-3 rounded text-white font-bold">
+                            🛠️ Admin Panel
+                        </a>
+                    }
+
                     <a href="/logout" class="block py-2 hover:bg-red-700 px-3 rounded">
                         🚪 Kijelentkezés
                     </a>
@@ -124,6 +141,11 @@
 
 @code {
     private bool mobileMenuOpen = false;
+
+    protected override void OnInitialized()
+    {
+        StateHasChanged();
+    }
 
     private void ToggleMobileMenu()
     {
