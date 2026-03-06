@@ -1,0 +1,165 @@
+﻿@page "/admin"
+@inject NagypapaHazaiBlazor.Services.AuthState Auth
+@inject NagypapaHazaiBlazor.Data.NagypapaContext Db
+@inject NavigationManager Nav
+@using NagypapaHazaiBlazor.MODELS;
+@using Microsoft.EntityFrameworkCore
+
+@if (!Auth.IsAdmin)
+{
+    Nav.NavigateTo("/");
+    return;
+}
+
+<h1 class="text-3xl font-bold mb-8">🛠️ Admin Panel</h1>
+
+<!-- Statisztika kártyák -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-amber-600">@bookings.Count</p>
+        <p class="text-gray-500">Összes foglalás</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-yellow-500">@bookings.Count(b => b.Status == "Pending")</p>
+        <p class="text-gray-500">Függőben</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-green-600">@bookings.Count(b => b.Status == "Approved")</p>
+        <p class="text-gray-500">Elfogadva</p>
+    </div>
+    <div class="bg-white rounded-xl shadow p-4 text-center">
+        <p class="text-3xl font-bold text-blue-600">@users.Count</p>
+        <p class="text-gray-500">Felhasználók</p>
+    </div>
+</div>
+
+<!-- Foglalások táblázat -->
+<div class="bg-white rounded-xl shadow p-6 mb-8">
+    <h2 class="text-xl font-bold mb-4">📋 Foglalások kezelése</h2>
+    <table class="w-full text-sm">
+        <thead class="bg-amber-50">
+            <tr>
+                <th class="p-3 text-left">Felhasználó</th>
+                <th class="p-3 text-left">Ingatlan</th>
+                <th class="p-3 text-left">Dátum</th>
+                <th class="p-3 text-left">Státusz</th>
+                <th class="p-3 text-left">Műveletek</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var b in bookings)
+            {
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="p-3">@b.User?.UserName</td>
+                    <td class="p-3">@b.Property?.Name</td>
+                    <td class="p-3">@b.StartDate.ToShortDateString() – @b.EndDate.ToShortDateString()</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold
+                                @(b.Status == "Approved" ? "bg-green-100 text-green-700" :
+                                                            b.Status == "Rejected" ? "bg-red-100 text-red-700" :
+                                                            "bg-yellow-100 text-yellow-700")">
+                        @b.Status
+                    </span>
+                </td>
+                <td class="p-3 flex gap-2">
+                    @if (b.Status == "Pending")
+                        {
+                            <button @onclick='() => SetStatus(b, "Approved")'
+                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">
+                                ✅ Elfogad
+                            </button>
+                            <button @onclick='() => SetStatus(b, "Rejected")'
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
+                                ❌ Elutasít
+                            </button>
+                        }
+
+                        <a href="/admin/bookings/edit/@b.Id"
+                           class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
+                            ✏️ Szerkeszt
+                        </a>
+                        <button @onclick="() => DeleteBooking(b)"
+                                class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs">
+                            🗑️ Töröl
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Felhasználók táblázat -->
+<div class="bg-white rounded-xl shadow p-6">
+    <h2 class="text-xl font-bold mb-4">👥 Felhasználók</h2>
+    <table class="w-full text-sm">
+        <thead class="bg-amber-50">
+            <tr>
+                <th class="p-3 text-left">Név</th>
+                <th class="p-3 text-left">Email</th>
+                <th class="p-3 text-left">Szerepkör</th>
+                <th class="p-3 text-left">Műveletek</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in users)
+            {
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="p-3">@u.UserName</td>
+                    <td class="p-3">@u.Email</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold
+                                @(u.Role == "Admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700")">
+                            @u.Role
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        @if (u.Role != "Admin")
+                        {
+                            <button @onclick="() => DeleteUser(u)"
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
+                                🗑️ Töröl
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private List<Booking> bookings = new();
+    private List<User> users = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        bookings = await Db.Bookings
+            .Include(b => b.User)
+            .Include(b => b.Property)
+            .OrderByDescending(b => b.StartDate)
+            .ToListAsync();
+
+        users = await Db.Users.ToListAsync();
+    }
+
+    private async Task SetStatus(Booking b, string status)
+    {
+        b.Status = status;
+        await Db.SaveChangesAsync();
+    }
+
+    private async Task DeleteBooking(Booking b)
+    {
+        Db.Bookings.Remove(b);
+        await Db.SaveChangesAsync();
+        bookings.Remove(b);
+    }
+
+    private async Task DeleteUser(User u)
+    {
+        Db.Users.Remove(u);
+        await Db.SaveChangesAsync();
+        users.Remove(u);
+    }
+}

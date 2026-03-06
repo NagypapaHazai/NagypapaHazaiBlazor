@@ -1,26 +1,4 @@
-﻿//using NagypapaHazaiBlazor.MODELS;
-
-//namespace NagypapaHazaiBlazor.Services
-//{
-//    public class AuthState
-//    {
-//        public User? CurrentUser { get; private set; }
-
-//        public bool IsLoggedIn => CurrentUser != null;
-
-//        public void SetUser(User? user)
-//        {
-//            CurrentUser = user;
-//        }
-
-//        public void Logout()
-//        {
-//            CurrentUser = null;
-//        }
-//    }
-//}
-
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using NagypapaHazaiBlazor.MODELS;
 
 namespace NagypapaHazaiBlazor.Services
@@ -52,6 +30,17 @@ namespace NagypapaHazaiBlazor.Services
             }
         }
 
+
+        public bool IsAdmin
+        {
+            get
+            {
+                try { return Session?.GetString("Role") == "Admin"; }
+                catch { return false; }
+            }
+        }
+
+
         public User? CurrentUser
         {
             get
@@ -65,6 +54,7 @@ namespace NagypapaHazaiBlazor.Services
                         Id = id.Value,
                         UserName = Session?.GetString("UserName") ?? "",
                         Email = Session?.GetString("Email") ?? "",
+                        Role = Session?.GetString("Role") ?? "User", 
                         PasswordHash = ""
                     };
                 }
@@ -78,15 +68,15 @@ namespace NagypapaHazaiBlazor.Services
             {
                 if (user == null)
                 {
-                    Session?.Remove("UserId");    
-                    Session?.Remove("UserName");  
-                    Session?.Remove("Email");     
+
+                    Session?.Clear();
                 }
                 else
                 {
                     Session?.SetInt32("UserId", user.Id);
                     Session?.SetString("UserName", user.UserName);
                     Session?.SetString("Email", user.Email);
+                    Session?.SetString("Role", user.Role); 
                 }
             }
             catch { }

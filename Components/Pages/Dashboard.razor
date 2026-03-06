@@ -201,12 +201,11 @@ else
                                 <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
                             </svg>
                         </div>
-                        @* User navigációs property-n keresztül *@
                         <h4 class="font-bold text-gray-800">@book.User?.UserName</h4>
                     </div>
 
                     <p class="text-sm text-gray-600 mb-2">
-                        📅 @book.StartDate?.ToString("yyyy. MMM dd.") - @book.EndDate?.ToString("MMM dd.")
+                        📅 @book.StartDate.ToString("yyyy. MMM dd.") - @book.EndDate.ToString("MMM dd.")
                     </p>
 
                     @if (!string.IsNullOrEmpty(book.ExchangeOffer))
@@ -245,14 +244,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Auth.IsLoggedIn) return; // ne töltsön be adatot, ha nincs bejelentkezve
+        if (!Auth.IsLoggedIn) return;
 
         try
         {
             var props = await Db.Properties.ToListAsync();
             var events = await Db.Events.ToListAsync();
             var bookings = await Db.Bookings
-                .Include(b => b.User)       // User a navigációs property
+                .Include(b => b.User)
                 .ToListAsync();
 
             Model = new DashboardViewModel

@@ -47,7 +47,6 @@
                         {
                             <tr class="hover:bg-gray-50 transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @* ✅ User navigációs property-n keresztül *@
                                     <div class="text-sm font-medium text-gray-900">@booking.User?.UserName</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -57,33 +56,30 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
-                                        @(booking.StartDate?.ToString("yyyy. MM. dd.") ?? "?") -
-                                        @(booking.EndDate?.ToString("yyyy. MM. dd.") ?? "?")
+                                        @booking.StartDate.ToString("yyyy. MM. dd.") -
+                                        @booking.EndDate.ToString("yyyy. MM. dd.")
                                     </div>
                                     <div class="text-xs text-gray-500">
-                                        @if (booking.StartDate.HasValue && booking.EndDate.HasValue)
-                                        {
-                                            @((booking.EndDate.Value - booking.StartDate.Value).Days) <span>éjszaka</span>
-                                        }
+                                        @((booking.EndDate - booking.StartDate).Days) <span>éjszaka</span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                        @(booking.Status == "approved" ? "bg-green-100 text-green-800" :
-                                          booking.Status == "cancelled" ? "bg-red-100 text-red-800" :
-                                          "bg-yellow-100 text-yellow-800")">
+                                                @(booking.Status == "approved" ? "bg-green-100 text-green-800" :
+                                                                                    booking.Status == "cancelled" ? "bg-red-100 text-red-800" :
+                                                                                    "bg-yellow-100 text-yellow-800")">
                                         @(booking.Status == "approved" ? "Jóváhagyva" :
-                                          booking.Status == "cancelled" ? "Törölve" : "Függőben")
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button class="text-red-600 hover:text-red-900" title="Törlés"
-                                            @onclick="() => DeleteBooking(booking)">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
+                                                                        booking.Status == "cancelled" ? "Törölve" : "Függőben")
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button class="text-red-600 hover:text-red-900" title="Törlés"
+                                    @onclick="() => DeleteBooking(booking)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </td>
+                    </tr>
+                                        }
                     </tbody>
                 </table>
             </div>
@@ -97,8 +93,8 @@
     protected override async Task OnInitializedAsync()
     {
         bookings = await Db.Bookings
-            .Include(b => b.User)       // ← ÚJ: UserName-hez kell
-            .Include(b => b.Property)   // ← Property.Name-hez kell
+            .Include(b => b.User)
+            .Include(b => b.Property)
             .OrderByDescending(b => b.StartDate)
             .ToListAsync();
     }

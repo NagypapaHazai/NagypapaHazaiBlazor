@@ -123,7 +123,6 @@
 
     private async Task HandleValidSubmit()
     {
-        // UserName alapján megkeressük a usert
         var user = await Db.Users
             .FirstOrDefaultAsync(u => u.UserName == booking.UserName);
 
@@ -143,8 +142,9 @@
         {
             UserId = user.Id,
             PropertyId = booking.PropertyId,
-            StartDate = booking.StartDate,
-            EndDate = booking.EndDate,
+            // Ide beteszünk egy ?? fallback értéket, hogy a nullable DateTime ne okozzon gondot a sima DateTime-mal
+            StartDate = booking.StartDate ?? DateTime.Today,
+            EndDate = booking.EndDate ?? DateTime.Today.AddDays(1),
             ExchangeOffer = booking.ExchangeOffer,
             Status = "pending"
         };
@@ -154,4 +154,3 @@
         Nav.NavigateTo("/bookings");
     }
 }
-
