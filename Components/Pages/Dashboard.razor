@@ -8,18 +8,7 @@
 @inject NagypapaHazaiBlazor.Services.AuthState Auth
 @inject NavigationManager Nav
 
-@if (!Auth.IsLoggedIn)
-{
-    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg mb-8">
-        <p>Az oldal megtekintéséhez be kell jelentkezned.</p>
-        <a href="/login" class="btn btn-primary mt-2">Bejelentkezés</a>
-    </div>
-}
-else if (Model is null && Error is null)
-{
-    <div>Betöltés...</div>
-}
-else if (Error is not null)
+@if (Error is not null)
 {
     <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg mb-8 shadow-md">
         <div class="flex items-center">
@@ -27,8 +16,23 @@ else if (Error is not null)
         </div>
     </div>
 }
+else if (Model is null)
+{
+    <div class="flex justify-center items-center h-32">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+    </div>
+}
 else
 {
+    @* FIGYELMEZTETÉS, HA NINCS BEJELENTKEZVE *@
+    @if (!Auth.IsLoggedIn)
+    {
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg mb-8">
+            <p>Vendég módban nézed az oldalt. A foglaláshoz és admin funkciókhoz jelentkezz be.</p>
+            <a href="/login" class="text-amber-700 font-bold underline mt-2 inline-block">Bejelentkezés</a>
+        </div>
+    }
+
     <!-- Hero Section -->
     <div class="bg-gradient-to-r from-amber-600 to-orange-600 rounded-3xl shadow-2xl p-8 md:p-12 mb-12 text-white">
         <h1 class="text-4xl md:text-5xl font-bold mb-4">Üdvözöllek a Nagypapa Házainál! 🏡</h1>
@@ -100,36 +104,49 @@ else
             <div class="space-y-4">
                 @foreach (var prop in Model!.Properties.Take(3))
                 {
+                    bool isBooked = IsCurrentlyBooked(prop);
+
                     <div class="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
                         <div class="md:flex">
-                            <div class="md:w-1/3">
+                            <div class="md:w-1/3 relative">
+                                @if (isBooked)
+                                {
+                                    <div class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm z-10">
+                                        🔴 Foglalt
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm z-10">
+                                        🟢 Elérhető
+                                    </div>
+                                }
                                 <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400&h=300&fit=crop"
                                      alt="@prop.Name"
                                      class="w-full h-48 md:h-full object-cover" />
                             </div>
-                            <div class="p-6 md:w-2/3">
-                                <div class="flex items-start justify-between mb-2">
-                                    <h3 class="font-bold text-xl text-gray-800">@prop.Name</h3>
-                                    @if (prop.Status == "available")
-                                    {
-                                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">Elérhető</span>
-                                    }
-                                    else if (prop.Status == "maintenance")
-                                    {
-                                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">Karbantartás</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">@prop.Status</span>
-                                    }
+                            <div class="p-6 md:w-2/3 flex flex-col">
+                                <h3 class="font-bold text-xl text-gray-800 mb-1">@prop.Name</h3>
+                                <p class="text-gray-600 text-sm mb-2">📍 @prop.Location</p>
+                                <p class="text-gray-700 text-sm mb-3 line-clamp-2 flex-grow">@prop.Description</p>
+
+                                <div class="flex items-center justify-between mt-auto mb-3">
+                                    <span class="text-sm font-semibold text-gray-500">👥 Kapacitás: @prop.Capacity fő</span>
                                 </div>
-                                <p class="text-gray-600 text-sm mb-3">📍 @prop.Location</p>
-                                <p class="text-gray-700 mb-3 line-clamp-2">@prop.Description</p>
-                                <div class="flex items-center justify-between">
-                                    <span class="text-sm text-gray-500">👥 Kapacitás: @prop.Capacity fő</span>
-                                    <a href="@($"/properties/details/{prop.Id}")"
-                                       class="text-amber-600 hover:text-amber-700 font-semibold text-sm">Részletek →</a>
-                                </div>
+
+                                <!-- ITT VÁLTOZTATTAM MEG A LINKET: egyenesen a "/bookings/create" oldalra visz! -->
+                                @if (!isBooked)
+                                {
+                                    <a href="/bookings/create" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm text-sm">
+                                        Lefoglalom
+                                    </a>
+                                }
+                                else
+                                {
+                                    <button disabled class="w-full text-center bg-gray-200 text-gray-500 font-bold py-2 rounded-lg cursor-not-allowed text-sm">
+                                        Jelenleg foglalt
+                                    </button>
+                                }
                             </div>
                         </div>
                     </div>
@@ -188,9 +205,9 @@ else
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach (var book in Model!.Bookings.Take(6))
             {
-                var borderClass = book.Status == "approved"
+                var borderClass = book.Status?.ToLower() == "approved"
                 ? "border-green-500"
-                : book.Status == "pending"
+                : book.Status?.ToLower() == "pending"
                 ? "border-yellow-500"
                 : "border-gray-500";
 
@@ -216,17 +233,17 @@ else
                     }
 
                     <div class="flex items-center justify-between">
-                        @if (book.Status == "approved")
+                        @if (book.Status?.ToLower() == "approved")
                         {
                             <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">✓ Jóváhagyva</span>
                         }
-                        else if (book.Status == "pending")
+                        else if (book.Status?.ToLower() == "pending")
                         {
                             <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">⏳ Függőben</span>
                         }
                         else
                         {
-                            <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs font-semibold">@book.Status</span>
+                            <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">❌ Elutasítva</span>
                         }
 
                         <a href="@($"/bookings/details/{book.Id}")"
@@ -244,14 +261,13 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        if (!Auth.IsLoggedIn) return;
-
         try
         {
-            var props = await Db.Properties.ToListAsync();
+            var props = await Db.Properties.Include(p => p.Bookings).ToListAsync();
             var events = await Db.Events.ToListAsync();
             var bookings = await Db.Bookings
                 .Include(b => b.User)
+                .OrderByDescending(b => b.Id)
                 .ToListAsync();
 
             Model = new DashboardViewModel
@@ -263,8 +279,31 @@ else
         }
         catch (Exception ex)
         {
-            Error = $"Hiba: {ex.Message} – Inner: {ex.InnerException?.Message}";
+            Error = $"Hiba: {ex.Message}";
             Console.WriteLine(ex.ToString());
         }
+    }
+
+    private bool IsCurrentlyBooked(Property p)
+    {
+        if (p.Bookings == null || !p.Bookings.Any()) return false;
+
+        var today = DateTime.Now.Date;
+
+        foreach (var b in p.Bookings)
+        {
+            if (b.Status?.ToLower() == "approved")
+            {
+                if (DateTime.TryParse(b.StartDate.ToString(), out DateTime start) &&
+                    DateTime.TryParse(b.EndDate.ToString(), out DateTime end))
+                {
+                    if (start.Date <= today && end.Date >= today)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

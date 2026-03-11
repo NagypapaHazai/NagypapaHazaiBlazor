@@ -1,28 +1,61 @@
 ﻿@page "/properties"
 @using Microsoft.EntityFrameworkCore
-@using NagypapaHazaiBlazor.MODELS;
+@using NagypapaHazaiBlazor.MODELS
 @using NagypapaHazaiBlazor.Data
 @inject NagypapaContext Db
 
-
-
-<h2 class="text-3xl font-bold mb-4">Ingatlanok</h2>
+<h2 class="text-3xl font-bold mb-6">🏡 Ingatlanok</h2>
 
 @if (properties is null)
 {
-    <p>Betöltés...</p>
+    <div class="flex justify-center items-center h-32">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+    </div>
 }
 else
 {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @foreach (var p in properties)
         {
-            <div class="bg-white rounded-xl shadow p-4">
-                <h3 class="font-bold text-lg mb-1">@p.Name</h3>
-                <p class="text-sm text-gray-600 mb-1">📍 @p.Location</p>
-                <p class="text-sm mb-2">@p.Description</p>
-                <p class="text-xs text-gray-500 mb-2">Kapacitás: @p.Capacity fő</p>
-                <span class="text-xs px-2 py-1 rounded-full bg-gray-100">@p.Status</span>
+            bool isBooked = IsCurrentlyBooked(p);
+
+            <div class="bg-white rounded-xl shadow-md p-5 relative overflow-hidden border border-gray-100 flex flex-col">
+
+                <!-- Státusz jelző a jobb felső sarokban -->
+                @if (isBooked)
+                {
+                    <div class="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        🔴 Foglalt
+                    </div>
+                }
+                else
+                {
+                    <div class="absolute top-4 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                        🟢 Elérhető
+                    </div>
+                }
+
+                <h3 class="font-bold text-xl mb-2 pr-20 text-amber-900">@p.Name</h3>
+                <p class="text-sm text-gray-600 mb-3">📍 @p.Location</p>
+                <p class="text-sm text-gray-700 mb-4 flex-grow">@p.Description</p>
+
+                <div class="bg-amber-50 rounded-lg p-3 mb-4">
+                    <p class="text-sm text-amber-800 font-semibold">Kapacitás: @p.Capacity fő</p>
+                </div>
+
+                <!-- Gomb a foglaláshoz -->
+                @if (!isBooked)
+                {
+                    <a href="/bookings/create/@p.Id" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm">
+                        Lefoglalom
+                    </a>
+                }
+                else
+                {
+                    <button disabled class="w-full text-center bg-gray-200 text-gray-500 font-bold py-2 rounded-lg cursor-not-allowed">
+                        Jelenleg nem foglalható
+                    </button>
+                }
             </div>
         }
     </div>
@@ -33,6 +66,34 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        properties = await Db.Properties.ToListAsync();
+        // Az Include(p => p.Bookings) segítségével betöltjük az ingatlanokhoz tartozó foglalásokat is!
+        properties = await Db.Properties.Include(p => p.Bookings).ToListAsync();
+    }
+
+    // Ez a függvény megnézi, hogy a mai napon éppen ki van-e adva az ingatlan
+    private bool IsCurrentlyBooked(Property p)
+    {
+        if (p.Bookings == null || !p.Bookings.Any()) return false;
+
+        var today = DateTime.Now.Date;
+
+        foreach (var b in p.Bookings)
+        {
+            // Csak az elfogadott foglalásokat nézzük
+            if (b.Status?.ToLower() == "approved")
+            {
+                // Biztonságos dátum konverzió (így működik DateTime és DateOnly esetén is a C#-ban)
+                if (DateTime.TryParse(b.StartDate.ToString(), out DateTime start) &&
+                    DateTime.TryParse(b.EndDate.ToString(), out DateTime end))
+                {
+                    // Ha a mai nap beleesik az elfogadott foglalás időtartamába, akkor az ingatlan foglalt!
+                    if (start.Date <= today && end.Date >= today)
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

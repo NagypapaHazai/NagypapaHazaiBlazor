@@ -1,8 +1,10 @@
 ﻿@page "/admin"
+@rendermode InteractiveServer
+
 @inject NagypapaHazaiBlazor.Services.AuthState Auth
 @inject NagypapaHazaiBlazor.Data.NagypapaContext Db
 @inject NavigationManager Nav
-@using NagypapaHazaiBlazor.MODELS;
+@using NagypapaHazaiBlazor.MODELS
 @using Microsoft.EntityFrameworkCore
 
 @if (!Auth.IsAdmin)
@@ -55,14 +57,14 @@
                     <td class="p-3">@b.StartDate.ToShortDateString() – @b.EndDate.ToShortDateString()</td>
                     <td class="p-3">
                         <span class="px-2 py-1 rounded-full text-xs font-bold
-                                @(b.Status == "Approved" ? "bg-green-100 text-green-700" :
-                                                            b.Status == "Rejected" ? "bg-red-100 text-red-700" :
-                                                            "bg-yellow-100 text-yellow-700")">
+                                    @(b.Status == "Approved" ? "bg-green-100 text-green-700" :
+                                                                                          b.Status == "Rejected" ? "bg-red-100 text-red-700" :
+                                                                                          "bg-yellow-100 text-yellow-700")">
                         @b.Status
                     </span>
                 </td>
                 <td class="p-3 flex gap-2">
-                    @if (b.Status == "Pending")
+                    @if (b.Status == "pending")
                         {
                             <button @onclick='() => SetStatus(b, "Approved")'
                                     class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">
@@ -109,7 +111,7 @@
                     <td class="p-3">@u.Email</td>
                     <td class="p-3">
                         <span class="px-2 py-1 rounded-full text-xs font-bold
-                                @(u.Role == "Admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700")">
+                                    @(u.Role == "Admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700")">
                             @u.Role
                         </span>
                     </td>
