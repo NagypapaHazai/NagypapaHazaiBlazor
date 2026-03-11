@@ -13,6 +13,7 @@ namespace NagypapaHazaiBlazor.Data
         public DbSet<Property> Properties { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<Event> Events { get; set; }
+        public DbSet<EventRegistration> EventRegistrations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

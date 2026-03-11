@@ -11,6 +11,7 @@
         public string Role { get; set; } = "User"; 
 
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+        public List<EventRegistration> EventRegistrations { get; set; } = new();
     }
 }
 

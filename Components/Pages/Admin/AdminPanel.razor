@@ -22,11 +22,11 @@
         <p class="text-gray-500">Összes foglalás</p>
     </div>
     <div class="bg-white rounded-xl shadow p-4 text-center">
-        <p class="text-3xl font-bold text-yellow-500">@bookings.Count(b => b.Status == "Pending")</p>
+        <p class="text-3xl font-bold text-yellow-500">@bookings.Count(b => b.Status?.ToLower() == "pending")</p>
         <p class="text-gray-500">Függőben</p>
     </div>
     <div class="bg-white rounded-xl shadow p-4 text-center">
-        <p class="text-3xl font-bold text-green-600">@bookings.Count(b => b.Status == "Approved")</p>
+        <p class="text-3xl font-bold text-green-600">@bookings.Count(b => b.Status?.ToLower() == "approved")</p>
         <p class="text-gray-500">Elfogadva</p>
     </div>
     <div class="bg-white rounded-xl shadow p-4 text-center">
@@ -57,20 +57,20 @@
                     <td class="p-3">@b.StartDate.ToShortDateString() – @b.EndDate.ToShortDateString()</td>
                     <td class="p-3">
                         <span class="px-2 py-1 rounded-full text-xs font-bold
-                                    @(b.Status == "Approved" ? "bg-green-100 text-green-700" :
-                                                                                          b.Status == "Rejected" ? "bg-red-100 text-red-700" :
-                                                                                          "bg-yellow-100 text-yellow-700")">
+                                    @(b.Status?.ToLower() == "approved" ? "bg-green-100 text-green-700" :
+                                                                b.Status?.ToLower() == "rejected" ? "bg-red-100 text-red-700" :
+                                                                "bg-yellow-100 text-yellow-700")">
                         @b.Status
                     </span>
                 </td>
                 <td class="p-3 flex gap-2">
-                    @if (b.Status == "pending")
+                    @if (b.Status?.ToLower() == "pending")
                         {
-                            <button @onclick='() => SetStatus(b, "Approved")'
+                            <button @onclick='() => SetStatus(b, "approved")'
                                     class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">
                                 ✅ Elfogad
                             </button>
-                            <button @onclick='() => SetStatus(b, "Rejected")'
+                            <button @onclick='() => SetStatus(b, "rejected")'
                                     class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
                                 ❌ Elutasít
                             </button>
@@ -91,11 +91,70 @@
     </table>
 </div>
 
+<!-- ÚJ: Esemény Jelentkezések táblázat -->
+<div class="bg-white rounded-xl shadow p-6 mb-8 border-t-4 border-blue-500">
+    <h2 class="text-xl font-bold mb-4 text-blue-900">🎟️ Esemény Jelentkezések</h2>
+    <table class="w-full text-sm">
+        <thead class="bg-blue-50">
+            <tr>
+                <th class="p-3 text-left">Esemény</th>
+                <th class="p-3 text-left">Felhasználó</th>
+                <th class="p-3 text-left">Dátum</th>
+                <th class="p-3 text-left">Státusz</th>
+                <th class="p-3 text-left">Műveletek</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (eventRegistrations.Count == 0)
+            {
+                <tr><td colspan="5" class="p-3 text-center text-gray-500 font-semibold">Nincsenek még jelentkezések.</td></tr>
+            }
+            @foreach (var er in eventRegistrations)
+            {
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="p-3 font-semibold">@er.Event?.Title</td>
+                    <td class="p-3">@er.User?.UserName</td>
+                    <td class="p-3">@er.RegistrationDate.ToString("yyyy. MM. dd.")</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold
+                                    @(er.Status?.ToLower() == "approved" ? "bg-green-100 text-green-700" :
+                                                                er.Status?.ToLower() == "rejected" ? "bg-red-100 text-red-700" :
+                                                                "bg-yellow-100 text-yellow-700")">
+                        @(er.Status == "approved" ? "Elfogadva" : er.Status == "rejected" ? "Elutasítva" : "Függőben")
+                    </span>
+                </td>
+                <td class="p-3 flex gap-2">
+                    @if (er.Status?.ToLower() == "pending")
+                        {
+                            <button @onclick='() => SetEventRegStatus(er, "approved")'
+                                    class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors shadow-sm">
+                                ✅ Elfogad
+                            </button>
+                            <button @onclick='() => SetEventRegStatus(er, "rejected")'
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors shadow-sm">
+                                ❌ Elutasít
+                            </button>
+                        }
+                        else
+                        {
+                            <!-- Ha már el van bírálva, egy gomb, amivel visszavonhatja/törölheti -->
+                            <button @onclick="() => DeleteEventReg(er)"
+                                    class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition-colors shadow-sm">
+                                🗑️ Töröl
+                            </button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
 <!-- Felhasználók táblázat -->
 <div class="bg-white rounded-xl shadow p-6">
     <h2 class="text-xl font-bold mb-4">👥 Felhasználók</h2>
     <table class="w-full text-sm">
-        <thead class="bg-amber-50">
+        <thead class="bg-gray-100">
             <tr>
                 <th class="p-3 text-left">Név</th>
                 <th class="p-3 text-left">Email</th>
@@ -111,7 +170,7 @@
                     <td class="p-3">@u.Email</td>
                     <td class="p-3">
                         <span class="px-2 py-1 rounded-full text-xs font-bold
-                                    @(u.Role == "Admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700")">
+                                        @(u.Role == "Admin" ? "bg-purple-100 text-purple-700" : "bg-gray-100 text-gray-700")">
                             @u.Role
                         </span>
                     </td>
@@ -119,7 +178,7 @@
                         @if (u.Role != "Admin")
                         {
                             <button @onclick="() => DeleteUser(u)"
-                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">
+                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs shadow-sm">
                                 🗑️ Töröl
                             </button>
                         }
@@ -133,6 +192,7 @@
 @code {
     private List<Booking> bookings = new();
     private List<User> users = new();
+    private List<EventRegistration> eventRegistrations = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -143,6 +203,12 @@
             .ToListAsync();
 
         users = await Db.Users.ToListAsync();
+
+        eventRegistrations = await Db.EventRegistrations
+            .Include(er => er.User)
+            .Include(er => er.Event)
+            .OrderByDescending(er => er.RegistrationDate)
+            .ToListAsync();
     }
 
     private async Task SetStatus(Booking b, string status)
@@ -156,6 +222,21 @@
         Db.Bookings.Remove(b);
         await Db.SaveChangesAsync();
         bookings.Remove(b);
+    }
+
+    // Új: Esemény jelentkezés kezelése
+    private async Task SetEventRegStatus(EventRegistration er, string status)
+    {
+        er.Status = status;
+        await Db.SaveChangesAsync();
+    }
+
+    // Új: Esemény jelentkezés törlése
+    private async Task DeleteEventReg(EventRegistration er)
+    {
+        Db.EventRegistrations.Remove(er);
+        await Db.SaveChangesAsync();
+        eventRegistrations.Remove(er);
     }
 
     private async Task DeleteUser(User u)
