@@ -11,6 +11,11 @@
         public string? ImageUrl { get; set; }       // ← ÚJ
         public DateTime CreatedAt { get; set; } = DateTime.Now; // ← ÚJ
 
+
+        // ÚJ MEZŐ – ide tudsz majd extra szöveges infót írni az ingatlanról
+        public string? ExtraInfo { get; set; }
+
+
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
         public ICollection<Event> Events { get; set; } = new List<Event>();
     }

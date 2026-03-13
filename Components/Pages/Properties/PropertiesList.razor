@@ -43,16 +43,44 @@ else
                     <p class="text-sm text-amber-800 font-semibold">Kapacitás: @p.Capacity fő</p>
                 </div>
 
+                <!-- Lenyíló fül: további infók -->
+                <button @onclick="() => ToggleDetails(p.Id)"
+                        class="w-full flex items-center justify-between text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-lg transition-colors mb-3">
+                    <span>További információk</span>
+                    <span class="text-xs">
+                        @(openPropertyId == p.Id ? "▲" : "▼")
+                    </span>
+                </button>
+
+                @if (openPropertyId == p.Id)
+                {
+                    <div class="mt-1 mb-3 border-t border-amber-100 pt-3 text-sm text-gray-700 space-y-2">
+                        @* Ha majd lesz külön ExtraInfo meződ, ide teheted: *@
+                        @if (!string.IsNullOrWhiteSpace(p.ExtraInfo))
+                        {
+                            <p>@p.ExtraInfo</p>
+                        }
+                        else
+                        {
+                            <ul class="list-disc list-inside text-xs text-gray-600 space-y-1">
+                                <li>Ingyenes parkolás az udvarban</li>
+                                <li>Háziállat hozható megbeszélés alapján</li>
+                                <li>Wi‑Fi, felszerelt konyha, szabadtéri sütögető</li>
+                            </ul>
+                        }
+                    </div>
+                }
+
                 <!-- Gomb a foglaláshoz -->
                 @if (!isBooked)
                 {
-                    <a href="/bookings/create/@p.Id" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm">
+                    <a href="/bookings/create" class="mt-auto block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm">
                         Lefoglalom
                     </a>
                 }
                 else
                 {
-                    <button disabled class="w-full text-center bg-gray-200 text-gray-500 font-bold py-2 rounded-lg cursor-not-allowed">
+                    <button disabled class="mt-auto w-full text-center bg-gray-200 text-gray-500 font-bold py-2 rounded-lg cursor-not-allowed">
                         Jelenleg nem foglalható
                     </button>
                 }
@@ -63,11 +91,21 @@ else
 
 @code {
     private List<Property>? properties;
+    private int? openPropertyId; // melyik ingatlan lenyílója van nyitva
 
     protected override async Task OnInitializedAsync()
     {
-        // Az Include(p => p.Bookings) segítségével betöltjük az ingatlanokhoz tartozó foglalásokat is!
-        properties = await Db.Properties.Include(p => p.Bookings).ToListAsync();
+        properties = await Db.Properties
+            .Include(p => p.Bookings)
+            .ToListAsync();
+    }
+
+    private void ToggleDetails(int id)
+    {
+        if (openPropertyId == id)
+            openPropertyId = null;   // ha újra rákattint, csukjuk be
+        else
+            openPropertyId = id;     // különben ezt nyitjuk ki
     }
 
     // Ez a függvény megnézi, hogy a mai napon éppen ki van-e adva az ingatlan
@@ -79,14 +117,11 @@ else
 
         foreach (var b in p.Bookings)
         {
-            // Csak az elfogadott foglalásokat nézzük
             if (b.Status?.ToLower() == "approved")
             {
-                // Biztonságos dátum konverzió (így működik DateTime és DateOnly esetén is a C#-ban)
                 if (DateTime.TryParse(b.StartDate.ToString(), out DateTime start) &&
                     DateTime.TryParse(b.EndDate.ToString(), out DateTime end))
                 {
-                    // Ha a mai nap beleesik az elfogadott foglalás időtartamába, akkor az ingatlan foglalt!
                     if (start.Date <= today && end.Date >= today)
                     {
                         return true;
