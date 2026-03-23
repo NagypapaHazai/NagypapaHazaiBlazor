@@ -110,14 +110,15 @@
 </div>
 
 @code {
-    private List<NagypapaHazaiBlazor.MODELS.Event>? events;
+    private List<Event>? events;
 
     protected override async Task OnInitializedAsync()
     {
-        // Betöltjük a regisztrációkat is, hogy később könnyen listázhasd a szabad helyeket
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
         events = await Db.Events
-            .Include(e => e.Registrations)
+            .Where(e => e.StartDate == null || e.StartDate >= today)   // csak a mára / jövőre eső események
             .OrderBy(e => e.StartDate)
             .ToListAsync();
     }
-}
+}   

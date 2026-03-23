@@ -102,8 +102,8 @@
     [SupplyParameterFromForm]
     private Event newEvent { get; set; } = new Event
     {
-        StartDate = DateOnly.FromDateTime(DateTime.Now.AddDays(1)),
-        EndDate = DateOnly.FromDateTime(DateTime.Now.AddDays(2)),
+        StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(7)),   // pl. egy hét múlva
+        EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(9)),
         MaxParticipants = 10
     };
 

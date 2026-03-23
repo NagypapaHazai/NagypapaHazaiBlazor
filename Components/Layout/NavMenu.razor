@@ -1,82 +1,74 @@
 ﻿@inject NagypapaHazaiBlazor.Services.AuthState Auth
-@inject NavigationManager Nav
 
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">NagypapaHazaiBlazor</a>
+<nav class="bg-amber-800 text-white shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+
+            <!-- Logo -->
+            <a href="/" class="text-xl font-bold text-white hover:text-amber-200 transition-colors">
+                🏠 Nagypapa Házai
+            </a>
+
+            <!-- Hamburger gomb -->
+            <button onclick="
+                var m = document.getElementById('mobileMenu');
+                m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+            " class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-amber-700 transition-colors cursor-pointer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+
+            <!-- Asztali menü -->
+            <div class="hidden md:flex items-center gap-2">
+                <a href="/" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Főoldal</a>
+                <a href="/properties" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Ingatlanok</a>
+                <a href="/events" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Események</a>
+                <a href="/bookings" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Foglalások</a>
+
+                @if (Auth.IsLoggedIn)
+                {
+                    <a href="/bookings/create" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">Új foglalás</a>
+                    <a href="/about" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">Rólunk</a>
+                    <span class="px-3 py-2 text-amber-200 text-sm">👤 @Auth.CurrentUser?.UserName</span>
+                    @if (Auth.IsAdmin)
+                    {
+                        <a href="/admin" class="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 font-bold">⚙️ Admin</a>
+                    }
+                    <a href="/logout" class="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 font-bold">Kijelentkezés</a>
+                }
+                else
+                {
+                    <a href="/login" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">Bejelentkezés</a>
+                    <a href="/register" class="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 font-bold">Regisztráció</a>
+                }
+            </div>
+        </div>
     </div>
-</div>
 
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="dashboard">
-                <span class="bi bi-house-door-fill" aria-hidden="true"></span> Dashboard
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="properties">
-                <span class="bi bi-building" aria-hidden="true"></span> Ingatlanok
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="events">
-                <span class="bi bi-calendar-event" aria-hidden="true"></span> Események
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="bookings">
-                <span class="bi bi-journal-check" aria-hidden="true"></span> Foglalások
-            </NavLink>
-        </div>
+    <!-- Mobil menü – alapból rejtett, JS toggle-olja -->
+    <div id="mobileMenu" style="display:none; flex-direction:column;"
+         class="md:hidden bg-amber-900 border-t border-amber-700 px-4 py-3 gap-1">
+        <a href="/" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">🏠 Főoldal</a>
+        <a href="/properties" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">🏡 Ingatlanok</a>
+        <a href="/events" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">🎉 Események</a>
+        <a href="/bookings" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">📋 Foglalások</a>
 
         @if (Auth.IsLoggedIn)
         {
-            <div class="nav-item px-3 mt-2">
-                <span class="nav-link text-white opacity-75">
-                    👤 @Auth.CurrentUser!.UserName
-                </span>
-            </div>
-            <div class="nav-item px-3">
-                <button class="btn btn-outline-light btn-sm w-100"
-                        @onclick="Logout">
-                    🚪 Kijelentkezés
-                </button>
-            </div>
+            <a href="/bookings/create" class="block px-3 py-2 rounded-lg bg-amber-600 font-bold">➕ Új foglalás</a>
+            <a href="/about" class="block px-3 py-2 rounded-lg bg-amber-600 font-bold">ℹ️ Rólunk</a>
+            <span class="block px-3 py-2 text-amber-200 text-sm">👤 @Auth.CurrentUser?.UserName</span>
+            @if (Auth.IsAdmin)
+            {
+                <a href="/admin" class="block px-3 py-2 rounded-lg bg-purple-600 font-bold">⚙️ Admin</a>
+            }
+            <a href="/logout" class="block px-3 py-2 rounded-lg bg-red-600 font-bold">🚪 Kijelentkezés</a>
         }
         else
         {
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="/login">
-                    <span class="bi bi-box-arrow-in-right" aria-hidden="true"></span> Bejelentkezés
-                </NavLink>
-            </div>
-            <div class="nav-item px-3">
-                <NavLink class="nav-link" href="/register">
-                    <span class="bi bi-person-plus" aria-hidden="true"></span> Regisztráció
-                </NavLink>
-            </div>
+            <a href="/login" class="block px-3 py-2 rounded-lg bg-amber-600 font-bold">🔑 Bejelentkezés</a>
+            <a href="/register" class="block px-3 py-2 rounded-lg bg-green-600 font-bold">📝 Regisztráció</a>
         }
-
-    </nav>
-</div>
-
-@code {
-    private void Logout()
-    {
-        Auth.SetUser(null);
-        Nav.NavigateTo("/", forceLoad: true); // ← forceLoad: true kötelező!
-    }
-}
+    </div>
+</nav>
