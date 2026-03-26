@@ -24,7 +24,6 @@ else if (Model is null)
 }
 else
 {
-    @* FIGYELMEZTETÉS, HA NINCS BEJELENTKEZVE *@
     @if (!Auth.IsLoggedIn)
     {
         <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-lg mb-8">
@@ -134,8 +133,8 @@ else
                                     <span class="text-sm font-semibold text-gray-500">👥 Kapacitás: @prop.Capacity fő</span>
                                 </div>
 
-                                <!-- MINDIG KATTINTHATÓ GOMB (Naptár / Foglalás) -->
-                                <a href="/bookings/create" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm text-sm mt-auto">
+                                <!-- GOMB URL PARAMÉTERREL! -->
+                                <a href="/bookings/create?propertyId=@prop.Id" class="block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm text-sm mt-auto">
                                     Naptár és Foglalás
                                 </a>
                             </div>

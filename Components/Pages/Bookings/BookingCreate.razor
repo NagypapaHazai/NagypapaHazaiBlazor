@@ -39,7 +39,7 @@
                         <ValidationMessage For="@(() => booking.UserName)" class="text-red-500 text-xs mt-1" />
                     </div>
 
-                    <!-- Ingatlan kiválasztása (Eseménykezelővel, hogy frissítse a naptárat) -->
+                    <!-- Ingatlan kiválasztása -->
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Válassz ingatlant</label>
                         <select class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
@@ -72,7 +72,7 @@
                         </div>
                     </div>
 
-                    <!-- Csereajánlat (Ide teheted a munkák megadását) -->
+                    <!-- Csereajánlat -->
                     <div class="mb-4">
                         <label class="block text-gray-700 text-sm font-bold mb-2">Csereajánlat / Készség felajánlása</label>
                         <InputTextArea class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all h-24"
@@ -104,7 +104,6 @@
             <div class="h-full">
                 @if (booking.PropertyId > 0)
                 {
-                    <!-- Itt hívjuk meg az imént írt komponenst! -->
                     <BookingCalendar PropertyId="@booking.PropertyId" />
                 }
                 else
@@ -124,6 +123,9 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery]
+    public int? propertyId { get; set; }
+
     private BookingFormModel booking { get; set; } = new();
     private List<Property> properties = new();
     private string errorMessage = "";
@@ -149,14 +151,18 @@
     {
         properties = await Db.Properties.ToListAsync();
 
-        // Ha a felhasználó be van jelentkezve, automatikusan kitöltjük a nevét
         if (Auth.IsLoggedIn && Auth.CurrentUser != null)
         {
             booking.UserName = Auth.CurrentUser.UserName;
         }
+
+        // Ha URL-ből jött az ingatlan ID, akkor beállítjuk alapértelmezettnek
+        if (propertyId.HasValue && propertyId.Value > 0)
+        {
+            booking.PropertyId = propertyId.Value;
+        }
     }
 
-    // Amikor megváltozik a legördülő menü értéke, azonnal frissítjük a modellt, hogy a naptár újra renderelődjön
     private void OnPropertySelected(ChangeEventArgs e)
     {
         if (int.TryParse(e.Value?.ToString(), out int selectedId))
@@ -186,14 +192,13 @@
             return;
         }
 
-        // 🚨 Itt oldjuk meg az ÜTKÖZÉS SZŰRÉSÉT is! 🚨
         var startDate = booking.StartDate ?? DateTime.Today;
         var endDate = booking.EndDate ?? DateTime.Today.AddDays(1);
 
         var conflictingBooking = await Db.Bookings
             .Where(b => b.PropertyId == booking.PropertyId)
-            .Where(b => b.Status == "approved") // Csak az elfogadott foglalásokat nézzük
-            .Where(b => b.StartDate < endDate && b.EndDate > startDate) // Logika az átfedés vizsgálatára
+            .Where(b => b.Status == "approved")
+            .Where(b => b.StartDate < endDate && b.EndDate > startDate)
             .FirstOrDefaultAsync();
 
         if (conflictingBooking != null)
@@ -202,7 +207,6 @@
             return;
         }
 
-        // Ha minden jó, mentés az adatbázisba
         var newBooking = new Booking
         {
             UserId = user.Id,
@@ -210,13 +214,12 @@
             StartDate = startDate,
             EndDate = endDate,
             ExchangeOffer = booking.ExchangeOffer,
-            Status = "pending" // Új foglalás alapból "Függőben" státuszú
+            Status = "pending"
         };
 
         Db.Bookings.Add(newBooking);
         await Db.SaveChangesAsync();
 
-        // Mentés után átirányítjuk a saját foglalásaihoz
         Nav.NavigateTo("/bookings/mine");
     }
 }
