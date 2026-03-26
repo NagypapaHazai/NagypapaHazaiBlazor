@@ -3,6 +3,7 @@
 @using NagypapaHazaiBlazor.MODELS
 @using NagypapaHazaiBlazor.Data
 @inject NagypapaContext Db
+@inject IJSRuntime JS
 
 <div class="container mx-auto px-4 py-8">
     <div class="flex justify-between items-center mb-6">
@@ -61,9 +62,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                                        @(booking.Status == "approved" ? "bg-green-100 text-green-800" :
-                                                                                                                              booking.Status == "cancelled" ? "bg-red-100 text-red-800" :
-                                                                                                                              "bg-yellow-100 text-yellow-800")">
+                                                                @(booking.Status == "approved" ? "bg-green-100 text-green-800" :
+                                                                                                    booking.Status == "cancelled" ? "bg-red-100 text-red-800" :
+                                                                                                    "bg-yellow-100 text-yellow-800")">
                                         @(booking.Status == "approved" ? "Jóváhagyva" :
                                                                         booking.Status == "cancelled" ? "Törölve" : "Függőben")
                             </span>
@@ -97,8 +98,16 @@
 
     private async Task DeleteBooking(Booking booking)
     {
+        bool confirmed = await JS.InvokeAsync<bool>("confirm",
+            $"Biztosan véglegesen törlöd {booking.User?.UserName} foglalását? Ezt nem lehet visszavonni!");
+
+        if (!confirmed)
+            return;
+
         Db.Bookings.Remove(booking);
         await Db.SaveChangesAsync();
         bookings?.Remove(booking);
+
+        StateHasChanged();
     }
 }

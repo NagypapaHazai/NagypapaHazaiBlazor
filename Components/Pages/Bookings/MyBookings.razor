@@ -1,16 +1,17 @@
 ﻿@page "/bookings/mine"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using NagypapaHazaiBlazor.MODELS
 @using NagypapaHazaiBlazor.Data
 @inject NagypapaContext Db
 @inject NagypapaHazaiBlazor.Services.AuthState Auth
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 @if (Auth.IsLoggedIn)
 {
     <div class="container mx-auto px-4 py-8">
 
-        <!-- Fejléc + Új foglalás gomb -->
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-amber-900 flex items-center gap-2">
                 📋 Saját foglalásaim
@@ -62,28 +63,22 @@
                                         (@((b.EndDate - b.StartDate).Days) éjszaka)
                                     </span>
                                 </p>
-                                @if (!string.IsNullOrEmpty(b.ExchangeOffer))
-                                {
-                                    <p class="text-sm text-amber-700 mt-1">
-                                        🔄 Csereajánlat: @b.ExchangeOffer
-                                    </p>
-                                }
-                        </div>
+                            </div>
 
-                        <!-- Jobb oldal: státusz + lemondás -->
-                        <div class="flex flex-col items-end gap-3">
-                            <span class="px-3 py-1 rounded-full text-sm font-semibold
-                                                    @(b.Status == "approved" ? "bg-green-100 text-green-800" :
-                                                                                b.Status == "cancelled" ? "bg-red-100 text-red-800" :
-                                                                                "bg-yellow-100 text-yellow-800")">
-                                @(b.Status == "approved" ? "✓ Jóváhagyva" :
-                                                        b.Status == "cancelled" ? "✗ Törölve" : "⏳ Függőben")
+                            <!-- Jobb oldal: státusz + lemondás -->
+                            <div class="flex flex-col items-end gap-3">
+                                <span class="px-3 py-1 rounded-full text-sm font-semibold
+                                                                    @(b.Status == "approved" ? "bg-green-100 text-green-800" :
+                                                                                                b.Status == "cancelled" ? "bg-red-100 text-red-800" :
+                                                                                                "bg-yellow-100 text-yellow-800")">
+                                    @(b.Status == "approved" ? "✓ Jóváhagyva" :
+                                                            b.Status == "cancelled" ? "✗ Törölve" : "⏳ Függőben")
                     </span>
 
                     @if (b.Status != "cancelled")
                                 {
-                                    <button @onclick="() => CancelBooking(b)"
-                                            class="text-sm text-red-500 hover:text-red-700 font-medium border border-red-200 hover:border-red-400 px-3 py-1 rounded-lg transition-colors">
+                                    <button @onclick="@(async () => await CancelBooking(b))"
+                                            class="text-sm text-red-500 hover:text-red-700 font-medium border border-red-200 hover:border-red-400 px-3 py-1 rounded-lg transition-colors cursor-pointer">
                                         🗑 Lemondás
                                     </button>
                                 }
@@ -95,11 +90,11 @@
             </div>
         }
 
-        <!-- Toast üzenet -->
-        @if (!string.IsNullOrEmpty(successMessage))
+        <!-- Toast üzenet (hiba vagy siker) -->
+        @if (!string.IsNullOrEmpty(feedbackMessage))
         {
-            <div class="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg font-semibold animate-bounce z-50">
-                ✅ @successMessage
+            <div class="fixed bottom-6 right-6 @(isError ? "bg-red-500" : "bg-green-500") text-white px-6 py-3 rounded-xl shadow-lg font-semibold animate-bounce z-50">
+                @(isError ? "❌" : "✅") @feedbackMessage
             </div>
         }
 
@@ -108,11 +103,11 @@
 
 @code {
     private List<Booking>? myBookings;
-    private string successMessage = "";
+    private string feedbackMessage = "";
+    private bool isError = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // A navigációt mindig a kód blokkban, az inicializálásnál végezzük, nem a HTML renderelés közben!
         if (!Auth.IsLoggedIn)
         {
             Nav.NavigateTo("/login");
@@ -133,16 +128,31 @@
 
     private async Task CancelBooking(Booking b)
     {
-        b.Status = "cancelled";
-        await Db.SaveChangesAsync();
-        successMessage = "Foglalás sikeresen lemondva!";
-        await LoadBookings();
+        try
+        {
+            bool confirmed = await JS.InvokeAsync<bool>("confirm",
+                $"Biztosan le szeretnéd mondani a(z) {b.Property?.Name} foglalásodat?");
 
-        // Frissítjük a UI-t, hogy azonnal látszódjon a Toast üzenet, mielőtt a Delay elkezdődik
+            if (!confirmed)
+                return;
+
+            b.Status = "cancelled";
+            await Db.SaveChangesAsync();
+
+            isError = false;
+            feedbackMessage = "Foglalás sikeresen lemondva!";
+            await LoadBookings();
+        }
+        catch (Exception ex)
+        {
+            isError = true;
+            feedbackMessage = $"Hiba történt: {ex.Message}";
+        }
+
         StateHasChanged();
 
         await Task.Delay(3000);
-        successMessage = "";
+        feedbackMessage = "";
         StateHasChanged();
     }
 }
