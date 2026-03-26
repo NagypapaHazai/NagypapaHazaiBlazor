@@ -6,11 +6,11 @@
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
             <!-- Logo -->
-            <a href="/" class="text-2xl font-bold flex items-center gap-2">
+            <a href="/" class="text-xl md:text-2xl font-bold flex items-center gap-2">
                 🏡 <span class="font-serif">Nagypapa Házai</span>
             </a>
 
-            <!-- Desktop menü -->
+            <!-- Desktop menü (Nagy képernyőn látszik, mobilon rejtve) -->
             <div class="hidden md:flex items-center space-x-6">
                 <NavLink href="/" class="hover:text-amber-200 transition-colors" Match="NavLinkMatch.All">
                     Főoldal
@@ -24,8 +24,8 @@
 
                 @if (Auth.IsLoggedIn)
                 {
-                    <NavLink href="/bookings/mine" class="hover:text-amber-200 transition-colors">
-                        Foglalásaim
+                    <NavLink href="/bookings/mine" class="hover:text-amber-200 transition-colors font-bold">
+                        📋 Foglalásaim
                     </NavLink>
                 }
 
@@ -35,11 +35,10 @@
 
                 @if (Auth.IsLoggedIn)
                 {
-                    <span class="text-amber-100 font-medium ml-4">
+                    <span class="text-amber-100 font-medium ml-4 border-l border-amber-600 pl-4">
                         👤 @Auth.CurrentUser?.UserName
                     </span>
 
-                    @* ADMIN GOMB (Desktop) *@
                     @if (Auth.IsAdmin)
                     {
                         <a href="/admin" class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors text-white font-bold">
@@ -54,7 +53,7 @@
                 }
                 else
                 {
-                    <a href="/register" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors text-white font-bold">
+                    <a href="/register" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors text-white font-bold ml-4">
                         Regisztráció
                     </a>
                     <a href="/login" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors text-white font-bold">
@@ -63,54 +62,54 @@
                 }
             </div>
 
-            <!-- Mobil hamburger -->
-            <button @onclick="ToggleMobileMenu" class="md:hidden text-white cursor-pointer">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <!-- Mobil hamburger gomb (Kicsi képernyőn látszik, asztalin rejtve) -->
+            <!-- A JS kód megkeresi a mobile-menu id-jű divet és ki/be kapcsolja a 'hidden' osztályt -->
+            <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden');"
+                    class="md:hidden text-amber-200 hover:text-white focus:outline-none p-2 rounded-md border border-transparent hover:border-amber-600 transition-all cursor-pointer">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
             </button>
         </div>
 
-        <!-- Mobil menü -->
-        @if (mobileMenuOpen)
-        {
-            <div class="md:hidden pb-4 space-y-2 pt-2 border-t border-amber-700 mt-2">
-                <NavLink href="/" class="block py-2 hover:bg-amber-700 px-3 rounded">Főoldal</NavLink>
-                <NavLink href="/properties" class="block py-2 hover:bg-amber-700 px-3 rounded">Ingatlanok</NavLink>
-                <NavLink href="/events" class="block py-2 hover:bg-amber-700 px-3 rounded">Események</NavLink>
+        <!-- Mobil menü (alapértelmezetten rejtett a 'hidden' osztály miatt) -->
+        <div id="mobile-menu" class="hidden md:hidden pb-4 pt-2 border-t border-amber-700 mt-2 flex flex-col space-y-2">
+            <NavLink href="/" class="block py-2 hover:bg-amber-700 hover:pl-5 transition-all px-3 rounded text-lg">Főoldal</NavLink>
+            <NavLink href="/properties" class="block py-2 hover:bg-amber-700 hover:pl-5 transition-all px-3 rounded text-lg">Ingatlanok</NavLink>
+            <NavLink href="/events" class="block py-2 hover:bg-amber-700 hover:pl-5 transition-all px-3 rounded text-lg">Események</NavLink>
 
-                @if (Auth.IsLoggedIn)
+            @if (Auth.IsLoggedIn)
+            {
+                <NavLink href="/bookings/mine" class="block py-2 bg-amber-700/50 hover:bg-amber-700 hover:pl-5 transition-all px-3 rounded font-bold text-amber-200 text-lg">📋 Foglalásaim</NavLink>
+            }
+
+            <a href="/about" class="block py-2 hover:bg-amber-700 hover:pl-5 transition-all px-3 rounded text-lg">Rólunk</a>
+
+            @if (Auth.IsLoggedIn)
+            {
+                <div class="px-3 py-3 text-amber-200 border-t border-b border-amber-700 my-2 bg-amber-900/30">
+                    Bejelentkezve mint: <span class="font-bold">👤 @Auth.CurrentUser?.UserName</span>
+                </div>
+
+                @if (Auth.IsAdmin)
                 {
-                    <NavLink href="/bookings/mine" class="block py-2 hover:bg-amber-700 px-3 rounded font-bold text-amber-200">Foglalásaim</NavLink>
-                }
-
-                <a href="/about" class="block py-2 hover:bg-amber-700 px-3 rounded">Rólunk</a>
-
-                @if (Auth.IsLoggedIn)
-                {
-                    <div class="px-3 py-2 text-amber-200 border-b border-amber-700 mb-2">
-                        👤 @Auth.CurrentUser?.UserName
-                    </div>
-
-                    @* ADMIN GOMB (Mobil) *@
-                    @if (Auth.IsAdmin)
-                    {
-                        <a href="/admin" class="block py-2 hover:bg-purple-700 bg-purple-600 px-3 rounded text-white font-bold">
-                            🛠️ Admin Panel
-                        </a>
-                    }
-
-                    <a href="/logout" class="block py-2 hover:bg-red-700 bg-red-600 px-3 rounded text-white mt-2">
-                        🚪 Kijelentkezés
+                    <a href="/admin" class="block py-3 bg-purple-600 hover:bg-purple-700 px-3 rounded text-white font-bold text-center mt-2">
+                        🛠️ Admin Panel
                     </a>
                 }
-                else
-                {
-                    <a href="/login" class="block py-2 hover:bg-amber-700 bg-amber-600 px-3 rounded text-white mt-2">Bejelentkezés</a>
-                    <a href="/register" class="block py-2 hover:bg-green-700 bg-green-600 px-3 rounded text-white mt-2">Regisztráció</a>
-                }
-            </div>
-        }
+
+                <a href="/logout" class="block py-3 bg-red-600 hover:bg-red-700 px-3 rounded text-white font-bold text-center mt-2 shadow-sm">
+                    🚪 Kijelentkezés
+                </a>
+            }
+            else
+            {
+                <div class="grid grid-cols-2 gap-2 mt-4">
+                    <a href="/login" class="py-3 bg-amber-600 hover:bg-amber-700 rounded text-white font-bold text-center">Bejelentkezés</a>
+                    <a href="/register" class="py-3 bg-green-600 hover:bg-green-700 rounded text-white font-bold text-center">Regisztráció</a>
+                </div>
+            }
+        </div>
     </div>
 </nav>
 
@@ -148,15 +147,5 @@
 </footer>
 
 @code {
-    private bool mobileMenuOpen = false;
-
-    protected override void OnInitialized()
-    {
-        StateHasChanged();
-    }
-
-    private void ToggleMobileMenu()
-    {
-        mobileMenuOpen = !mobileMenuOpen;
-    }
+    
 }
