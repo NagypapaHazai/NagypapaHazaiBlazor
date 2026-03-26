@@ -6,11 +6,10 @@
 @inject NagypapaContext Db
 @inject NagypapaHazaiBlazor.Services.AuthState Auth
 @inject NavigationManager Nav
-@inject IJSRuntime JS
 
 @if (Auth.IsLoggedIn)
 {
-    <div class="container mx-auto px-4 py-8">
+    <div class="container mx-auto px-4 py-8 relative">
 
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-2xl font-bold text-amber-900 flex items-center gap-2">
@@ -65,7 +64,7 @@
                                 </p>
                             </div>
 
-                            <!-- Jobb oldal: státusz + lemondás -->
+                            <!-- Jobb oldal: státusz + lemondás gomb -->
                             <div class="flex flex-col items-end gap-3">
                                 <span class="px-3 py-1 rounded-full text-sm font-semibold
                                                                     @(b.Status == "approved" ? "bg-green-100 text-green-800" :
@@ -77,7 +76,7 @@
 
                     @if (b.Status != "cancelled")
                                 {
-                                    <button @onclick="@(async () => await CancelBooking(b))"
+                                    <button @onclick="() => PromptCancel(b)"
                                             class="text-sm text-red-500 hover:text-red-700 font-medium border border-red-200 hover:border-red-400 px-3 py-1 rounded-lg transition-colors cursor-pointer">
                                         🗑 Lemondás
                                     </button>
@@ -90,10 +89,43 @@
             </div>
         }
 
+        <!-- ❗ SAJÁT MODAL ABLAK (Csak akkor látszik, ha van kiválasztott foglalás törlésre) ❗ -->
+        @if (bookingToCancel != null)
+        {
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity">
+                <div class="bg-white rounded-xl shadow-2xl p-6 max-w-md w-full mx-4 border-t-4 border-red-500 transform transition-all">
+
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-red-100 p-2 rounded-full">
+                            <span class="text-red-600 text-xl">⚠️</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Foglalás lemondása</h3>
+                    </div>
+
+                    <p class="text-gray-600 mb-6">
+                        Biztosan le szeretnéd mondani a(z) <span class="font-bold text-gray-800">@bookingToCancel.Property?.Name</span>
+                        szállásra szóló foglalásodat (@bookingToCancel.StartDate.ToString("yyyy.MM.dd") - @bookingToCancel.EndDate.ToString("yyyy.MM.dd"))?
+                        Ezt a műveletet nem lehet visszavonni.
+                    </p>
+
+                    <div class="flex justify-end gap-3">
+                        <button @onclick="CancelPrompt"
+                                class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors cursor-pointer">
+                            Mégse
+                        </button>
+                        <button @onclick="ConfirmCancel"
+                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold shadow-md transition-colors cursor-pointer">
+                            Igen, lemondom
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+
         <!-- Toast üzenet (hiba vagy siker) -->
         @if (!string.IsNullOrEmpty(feedbackMessage))
         {
-            <div class="fixed bottom-6 right-6 @(isError ? "bg-red-500" : "bg-green-500") text-white px-6 py-3 rounded-xl shadow-lg font-semibold animate-bounce z-50">
+            <div class="fixed bottom-6 right-6 @(isError ? "bg-red-500" : "bg-green-500") text-white px-6 py-3 rounded-xl shadow-lg font-semibold animate-bounce z-[60]">
                 @(isError ? "❌" : "✅") @feedbackMessage
             </div>
         }
@@ -105,6 +137,9 @@
     private List<Booking>? myBookings;
     private string feedbackMessage = "";
     private bool isError = false;
+
+    // A kiválasztott foglalás, amit épp törölni készülünk (Ha null, a Modal rejtve van)
+    private Booking? bookingToCancel = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -126,17 +161,26 @@
             .ToListAsync();
     }
 
-    private async Task CancelBooking(Booking b)
+    // 1. Lépés: A gombra kattintva csak beállítjuk a változót, hogy feljöjjön az ablak
+    private void PromptCancel(Booking b)
     {
+        bookingToCancel = b;
+    }
+
+    // 2. Lépés: Ha a "Mégse" gombra nyom az ablakban
+    private void CancelPrompt()
+    {
+        bookingToCancel = null;
+    }
+
+    // 3. Lépés: Ha a megerősítő "Igen, lemondom" gombra nyom
+    private async Task ConfirmCancel()
+    {
+        if (bookingToCancel == null) return;
+
         try
         {
-            bool confirmed = await JS.InvokeAsync<bool>("confirm",
-                $"Biztosan le szeretnéd mondani a(z) {b.Property?.Name} foglalásodat?");
-
-            if (!confirmed)
-                return;
-
-            b.Status = "cancelled";
+            bookingToCancel.Status = "cancelled";
             await Db.SaveChangesAsync();
 
             isError = false;
@@ -148,9 +192,15 @@
             isError = true;
             feedbackMessage = $"Hiba történt: {ex.Message}";
         }
+        finally
+        {
+            // Törlés után eltüntetjük az ablakot
+            bookingToCancel = null;
+        }
 
         StateHasChanged();
 
+        // 3 másodperc múlva eltüntetjük a kis zöld üzenetet is a sarokból
         await Task.Delay(3000);
         feedbackMessage = "";
         StateHasChanged();
