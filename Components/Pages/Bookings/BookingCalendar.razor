@@ -1,0 +1,148 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using NagypapaHazaiBlazor.MODELS
+@using NagypapaHazaiBlazor.Data
+@inject NagypapaContext Db
+
+<div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 max-w-lg mx-auto">
+    <!-- Naptár Fejléc: Léptető gombok és aktuális hónap -->
+    <div class="flex items-center justify-between mb-4">
+        <button @onclick="PreviousMonth" class="p-2 hover:bg-amber-100 rounded-full text-amber-800 transition-colors cursor-pointer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+
+        <h3 class="text-xl font-bold text-amber-900 capitalize">
+            @currentDate.ToString("yyyy. MMMM")
+        </h3>
+
+        <button @onclick="NextMonth" class="p-2 hover:bg-amber-100 rounded-full text-amber-800 transition-colors cursor-pointer">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+    </div>
+
+    <!-- Jelmagyarázat -->
+    <div class="flex justify-center gap-4 mb-4 text-xs font-medium">
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-green-100 border border-green-400"></span> Szabad</div>
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-red-100 border border-red-400"></span> Foglalt</div>
+        <div class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-yellow-100 border border-yellow-400"></span> Függőben</div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="flex justify-center items-center h-48">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+        </div>
+    }
+    else
+    {
+        <!-- A hét napjai (H, K, Sze...) -->
+        <div class="grid grid-cols-7 mb-2">
+            @foreach (var dayName in new[] { "H", "K", "Sze", "Cs", "P", "Szo", "V" })
+            {
+                <div class="text-center font-bold text-gray-400 text-sm py-2">@dayName</div>
+            }
+        </div>
+
+        <!-- A naptár rácsa (napok) -->
+        <div class="grid grid-cols-7 gap-1">
+            @* Üres cellák a hónap elején *@
+            @for (int i = 0; i < emptyDaysAtStart; i++)
+            {
+                <div class="aspect-square bg-gray-50 rounded-lg opacity-50"></div>
+            }
+
+            @* A hónap valós napjai *@
+            @for (int day = 1; day <= daysInMonth; day++)
+            {
+                var currentDateIter = new DateTime(currentDate.Year, currentDate.Month, day);
+                var status = GetDayStatus(currentDateIter);
+                var isPast = currentDateIter.Date < DateTime.Today;
+
+                string bgClass = status switch
+                {
+                    "approved" => "bg-red-100 text-red-800 border-red-200",
+                    "pending" => "bg-yellow-100 text-yellow-800 border-yellow-200",
+                    _ => isPast ? "bg-gray-100 text-gray-400" : "bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                };
+
+                <div class="aspect-square flex items-center justify-center rounded-lg border text-sm font-semibold transition-colors @bgClass"
+                     title="@(status == "approved" ? "Ez a nap már foglalt" : status == "pending" ? "Ezt a napot valaki már kiszemelte" : isPast ? "Elmúlt nap" : "Szabad, foglalható")">
+                    @day
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    // A paraméter, amivel beállítod, hogy melyik ház naptárát akarod látni
+    [Parameter]
+    public int PropertyId { get; set; }
+
+    private DateTime currentDate = DateTime.Today;
+    private List<Booking> monthBookings = new();
+    private bool isLoading = true;
+
+    private int daysInMonth => DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+
+    // Kiszámolja, hány üres négyzet kell a naptár elejére (hogy pl. kedden kezdődjön a hónap)
+    private int emptyDaysAtStart
+    {
+        get
+        {
+            var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+            int dayOfWeek = (int)firstDayOfMonth.DayOfWeek;
+            return dayOfWeek == 0 ? 6 : dayOfWeek - 1; // Vasárnap 0, átalakítjuk hétfővel kezdődőre
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadBookingsForMonth();
+    }
+
+    private async Task LoadBookingsForMonth()
+    {
+        isLoading = true;
+
+        // A hónap első és utolsó napja
+        var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+        var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+        // Lekérjük a nem lemondott foglalásokat az adott ingatlanhoz ebben a hónapban
+        monthBookings = await Db.Bookings
+            .Where(b => b.PropertyId == PropertyId)
+            .Where(b => b.Status != "cancelled")
+            .Where(b => b.StartDate <= endOfMonth && b.EndDate >= startOfMonth)
+            .ToListAsync();
+
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task PreviousMonth()
+    {
+        currentDate = currentDate.AddMonths(-1);
+        await LoadBookingsForMonth();
+    }
+
+    private async Task NextMonth()
+    {
+        currentDate = currentDate.AddMonths(1);
+        await LoadBookingsForMonth();
+    }
+
+    // Megnézi, hogy egy adott napra esik-e foglalás
+    private string GetDayStatus(DateTime date)
+    {
+        var bookingOnThisDay = monthBookings.FirstOrDefault(b =>
+            date.Date >= b.StartDate.Date && date.Date < b.EndDate.Date); // EndDate éjszaka már kimennek, az a nap újra szabad
+
+        if (bookingOnThisDay != null)
+        {
+            // Visszaadjuk a státuszt: "approved" (piros lesz) vagy valami más ("pending", sárga lesz)
+            return bookingOnThisDay.Status == "approved" ? "approved" : "pending";
+        }
+
+        return "free";
+    }
+}
