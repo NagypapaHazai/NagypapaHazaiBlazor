@@ -1,5 +1,166 @@
-﻿<h3>BookingEdit</h3>
+﻿@page "/admin/bookings/edit/{Id:int}"
+@rendermode InteractiveServer
+@using Microsoft.EntityFrameworkCore
+@using NagypapaHazaiBlazor.MODELS
+@using NagypapaHazaiBlazor.Data
+@inject NagypapaContext Db
+@inject NavigationManager Nav
+@inject NagypapaHazaiBlazor.Services.AuthState Auth
+
+<div class="container mx-auto px-4 py-8 max-w-2xl">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-amber-900 flex items-center gap-2">
+            <i class="fas fa-edit"></i> Foglalás Szerkesztése
+        </h2>
+        <a href="/admin" class="text-gray-500 hover:text-gray-800 transition-colors font-medium">
+            &larr; Vissza az Admin Panelre
+        </a>
+    </div>
+
+    @if (!Auth.IsAdmin)
+    {
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+            Nincs jogosultságod ennek az oldalnak a megtekintéséhez!
+        </div>
+    }
+    else if (booking == null)
+    {
+        @if (isLoading)
+        {
+            <div class="flex justify-center h-32 items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+            </div>
+        }
+        else
+        {
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-lg">
+                A keresett foglalás nem található.
+            </div>
+        }
+    }
+    else
+    {
+        <div class="bg-white shadow-lg rounded-xl p-6 border border-gray-100">
+
+            <!-- Információs fejléc -->
+            <div class="bg-gray-50 p-4 rounded-lg mb-6 border border-gray-200">
+                <p class="text-sm text-gray-500 mb-1">Foglalás ID: #@booking.Id</p>
+                <p class="font-bold text-lg text-gray-800">Vendég: @(booking.User?.UserName ?? "Ismeretlen")</p>
+                <p class="text-gray-700">Ingatlan: <span class="font-semibold text-amber-800">@(booking.Property?.Name ?? "Ismeretlen")</span></p>
+                @if (!string.IsNullOrEmpty(booking.ExchangeOffer))
+                {
+                    <div class="mt-2 p-3 bg-amber-50 rounded border border-amber-100">
+                        <span class="text-xs font-bold text-amber-800 uppercase">Felajánlott munka:</span>
+                        <p class="text-sm italic text-gray-700">"@booking.ExchangeOffer"</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Szerkesztő Form -->
+            <EditForm Model="booking" OnValidSubmit="SaveBooking">
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Érkezés</label>
+                        <InputDate class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                   @bind-Value="booking.StartDate" />
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-2">Távozás</label>
+                        <InputDate class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                   @bind-Value="booking.EndDate" />
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Foglalás Státusza</label>
+                    <InputSelect class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
+                                 @bind-Value="booking.Status">
+                        <option value="pending">⏳ Függőben (pending)</option>
+                        <option value="approved">✅ Elfogadva (approved)</option>
+                        <option value="cancelled">❌ Elutasítva/Törölve (cancelled)</option>
+                    </InputSelect>
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="text-red-500 text-sm mb-4 font-medium">⚠️ @errorMessage</div>
+                }
+
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+                    <a href="/admin" class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg font-medium transition-colors">
+                        Mégse
+                    </a>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-md transition-all">
+                        💾 Módosítások mentése
+                    </button>
+                </div>
+
+            </EditForm>
+        </div>
+    }
+</div>
 
 @code {
+    [Parameter]
+    public int Id { get; set; }
 
+    private Booking? booking;
+    private bool isLoading = true;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!Auth.IsAdmin)
+        {
+            Nav.NavigateTo("/");
+            return;
+        }
+
+        // Betöltjük a foglalást a hozzátartozó User és Property adatokkal együtt
+        booking = await Db.Bookings
+            .Include(b => b.User)
+            .Include(b => b.Property)
+            .FirstOrDefaultAsync(b => b.Id == Id);
+
+        isLoading = false;
+    }
+
+    private async Task SaveBooking()
+    {
+        errorMessage = "";
+
+        if (booking!.EndDate <= booking.StartDate)
+        {
+            errorMessage = "A távozás dátuma nem lehet korábbi az érkezésnél!";
+            return;
+        }
+
+        // 🚨 Ütközés vizsgálata, ha a státuszt 'approved'-ra állítják 🚨
+        if (booking.Status == "approved")
+        {
+            var conflictingBooking = await Db.Bookings
+                .Where(b => b.PropertyId == booking.PropertyId && b.Id != booking.Id) // Saját magát ne nézze
+                .Where(b => b.Status == "approved")
+                .Where(b => b.StartDate < booking.EndDate && b.EndDate > booking.StartDate)
+                .FirstOrDefaultAsync();
+
+            if (conflictingBooking != null)
+            {
+                errorMessage = "Nem hagyhatod jóvá ezt a foglalást, mert erre az időszakra az ingatlan már ki van adva valaki másnak!";
+                return;
+            }
+        }
+
+        try
+        {
+            // Mentjük a változásokat
+            await Db.SaveChangesAsync();
+            Nav.NavigateTo("/admin"); // Vissza az admin felületre
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Hiba történt a mentés során: " + ex.Message;
+        }
+    }
 }
