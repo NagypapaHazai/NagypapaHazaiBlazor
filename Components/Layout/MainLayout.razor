@@ -2,7 +2,6 @@
 @inject NagypapaHazaiBlazor.Services.AuthState Auth
 @inject NavigationManager Nav
 
-
 <nav class="bg-gradient-to-r from-amber-800 via-orange-800 to-amber-800 text-white shadow-lg sticky top-0 z-50">
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between h-16">
@@ -22,13 +21,13 @@
                 <NavLink href="/events" class="hover:text-amber-200 transition-colors">
                     Események
                 </NavLink>
-                <NavLink href="/bookings" class="hover:text-amber-200 transition-colors">
-                    Foglalások
-                </NavLink>
 
-                <NavLink href="bookings/create" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors text-white font-bold no-underline">
-                    Új foglalás
-                </NavLink>
+                @if (Auth.IsLoggedIn)
+                {
+                    <NavLink href="/bookings/mine" class="hover:text-amber-200 transition-colors">
+                        Foglalásaim
+                    </NavLink>
+                }
 
                 <a href="/about" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors text-white font-bold">
                     Rólunk
@@ -36,7 +35,7 @@
 
                 @if (Auth.IsLoggedIn)
                 {
-                    <span class="text-amber-100 font-medium">
+                    <span class="text-amber-100 font-medium ml-4">
                         👤 @Auth.CurrentUser?.UserName
                     </span>
 
@@ -59,13 +58,13 @@
                         Regisztráció
                     </a>
                     <a href="/login" class="bg-amber-600 hover:bg-amber-700 px-4 py-2 rounded-lg transition-colors text-white font-bold">
-                        Login
+                        Bejelentkezés
                     </a>
                 }
             </div>
 
             <!-- Mobil hamburger -->
-            <button @onclick="ToggleMobileMenu" class="md:hidden text-white">
+            <button @onclick="ToggleMobileMenu" class="md:hidden text-white cursor-pointer">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
@@ -75,16 +74,24 @@
         <!-- Mobil menü -->
         @if (mobileMenuOpen)
         {
-            <div class="md:hidden pb-4 space-y-2">
+            <div class="md:hidden pb-4 space-y-2 pt-2 border-t border-amber-700 mt-2">
                 <NavLink href="/" class="block py-2 hover:bg-amber-700 px-3 rounded">Főoldal</NavLink>
-                <NavLink href="/dashboard" class="block py-2 hover:bg-amber-700 px-3 rounded">Dashboard</NavLink>
                 <NavLink href="/properties" class="block py-2 hover:bg-amber-700 px-3 rounded">Ingatlanok</NavLink>
                 <NavLink href="/events" class="block py-2 hover:bg-amber-700 px-3 rounded">Események</NavLink>
-                <NavLink href="/bookings" class="block py-2 hover:bg-amber-700 px-3 rounded">Foglalások</NavLink>
+
+                @if (Auth.IsLoggedIn)
+                {
+                    <NavLink href="/bookings/mine" class="block py-2 hover:bg-amber-700 px-3 rounded font-bold text-amber-200">Foglalásaim</NavLink>
+                }
+
                 <a href="/about" class="block py-2 hover:bg-amber-700 px-3 rounded">Rólunk</a>
 
                 @if (Auth.IsLoggedIn)
                 {
+                    <div class="px-3 py-2 text-amber-200 border-b border-amber-700 mb-2">
+                        👤 @Auth.CurrentUser?.UserName
+                    </div>
+
                     @* ADMIN GOMB (Mobil) *@
                     @if (Auth.IsAdmin)
                     {
@@ -93,14 +100,14 @@
                         </a>
                     }
 
-                    <a href="/logout" class="block py-2 hover:bg-red-700 px-3 rounded">
+                    <a href="/logout" class="block py-2 hover:bg-red-700 bg-red-600 px-3 rounded text-white mt-2">
                         🚪 Kijelentkezés
                     </a>
                 }
                 else
                 {
-                    <a href="/login" class="block py-2 hover:bg-amber-700 px-3 rounded">Login</a>
-                    <a href="/register" class="block py-2 hover:bg-amber-700 px-3 rounded">Regisztráció</a>
+                    <a href="/login" class="block py-2 hover:bg-amber-700 bg-amber-600 px-3 rounded text-white mt-2">Bejelentkezés</a>
+                    <a href="/register" class="block py-2 hover:bg-green-700 bg-green-600 px-3 rounded text-white mt-2">Regisztráció</a>
                 }
             </div>
         }

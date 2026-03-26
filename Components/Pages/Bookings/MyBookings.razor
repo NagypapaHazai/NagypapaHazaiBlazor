@@ -1,0 +1,148 @@
+﻿@page "/bookings/mine"
+@using Microsoft.EntityFrameworkCore
+@using NagypapaHazaiBlazor.MODELS
+@using NagypapaHazaiBlazor.Data
+@inject NagypapaContext Db
+@inject NagypapaHazaiBlazor.Services.AuthState Auth
+@inject NavigationManager Nav
+
+@if (Auth.IsLoggedIn)
+{
+    <div class="container mx-auto px-4 py-8">
+
+        <!-- Fejléc + Új foglalás gomb -->
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold text-amber-900 flex items-center gap-2">
+                📋 Saját foglalásaim
+            </h2>
+            <a href="/bookings/create"
+               class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2 rounded-lg transition-colors shadow-sm">
+                ➕ Új foglalás
+            </a>
+        </div>
+
+        @if (myBookings is null)
+        {
+            <div class="flex justify-center items-center h-32">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+            </div>
+        }
+        else if (!myBookings.Any())
+        {
+            <div class="text-center py-12 bg-amber-50 rounded-xl border border-amber-100">
+                <p class="text-amber-800 text-lg mb-4">Még nincs egyetlen foglalásod sem.</p>
+                <a href="/bookings/create"
+                   class="inline-block bg-amber-600 hover:bg-amber-700 text-white font-bold px-6 py-2 rounded-lg transition-colors">
+                    ➕ Hozz létre egyet most!
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="space-y-4">
+                @foreach (var b in myBookings)
+                {
+                    var borderColor = b.Status == "approved" ? "border-green-500" :
+                    b.Status == "cancelled" ? "border-red-500" : "border-yellow-500";
+
+                    <div class="bg-white rounded-xl shadow-md p-5 border-l-4 @borderColor hover:shadow-lg transition-shadow">
+                        <div class="flex items-center justify-between">
+
+                            <!-- Bal oldal: adatok -->
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800">
+                                    🏠 @(b.Property?.Name ?? "Ismeretlen ingatlan")
+                                </h3>
+                                <p class="text-sm text-gray-500 mt-1">
+                                    📍 @(b.Property?.Location ?? "–")
+                                </p>
+                                <p class="text-sm text-gray-700 mt-2">
+                                    📅 @b.StartDate.ToString("yyyy.MM.dd") – @b.EndDate.ToString("yyyy.MM.dd")
+                                    <span class="ml-2 text-gray-400">
+                                        (@((b.EndDate - b.StartDate).Days) éjszaka)
+                                    </span>
+                                </p>
+                                @if (!string.IsNullOrEmpty(b.ExchangeOffer))
+                                {
+                                    <p class="text-sm text-amber-700 mt-1">
+                                        🔄 Csereajánlat: @b.ExchangeOffer
+                                    </p>
+                                }
+                        </div>
+
+                        <!-- Jobb oldal: státusz + lemondás -->
+                        <div class="flex flex-col items-end gap-3">
+                            <span class="px-3 py-1 rounded-full text-sm font-semibold
+                                                    @(b.Status == "approved" ? "bg-green-100 text-green-800" :
+                                                                                b.Status == "cancelled" ? "bg-red-100 text-red-800" :
+                                                                                "bg-yellow-100 text-yellow-800")">
+                                @(b.Status == "approved" ? "✓ Jóváhagyva" :
+                                                        b.Status == "cancelled" ? "✗ Törölve" : "⏳ Függőben")
+                    </span>
+
+                    @if (b.Status != "cancelled")
+                                {
+                                    <button @onclick="() => CancelBooking(b)"
+                                            class="text-sm text-red-500 hover:text-red-700 font-medium border border-red-200 hover:border-red-400 px-3 py-1 rounded-lg transition-colors">
+                                        🗑 Lemondás
+                                    </button>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Toast üzenet -->
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="fixed bottom-6 right-6 bg-green-500 text-white px-6 py-3 rounded-xl shadow-lg font-semibold animate-bounce z-50">
+                ✅ @successMessage
+            </div>
+        }
+
+    </div>
+}
+
+@code {
+    private List<Booking>? myBookings;
+    private string successMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // A navigációt mindig a kód blokkban, az inicializálásnál végezzük, nem a HTML renderelés közben!
+        if (!Auth.IsLoggedIn)
+        {
+            Nav.NavigateTo("/login");
+            return;
+        }
+
+        await LoadBookings();
+    }
+
+    private async Task LoadBookings()
+    {
+        myBookings = await Db.Bookings
+            .Include(b => b.Property)
+            .Where(b => b.User!.UserName == Auth.CurrentUser!.UserName)
+            .OrderByDescending(b => b.StartDate)
+            .ToListAsync();
+    }
+
+    private async Task CancelBooking(Booking b)
+    {
+        b.Status = "cancelled";
+        await Db.SaveChangesAsync();
+        successMessage = "Foglalás sikeresen lemondva!";
+        await LoadBookings();
+
+        // Frissítjük a UI-t, hogy azonnal látszódjon a Toast üzenet, mielőtt a Delay elkezdődik
+        StateHasChanged();
+
+        await Task.Delay(3000);
+        successMessage = "";
+        StateHasChanged();
+    }
+}

@@ -24,21 +24,22 @@
                 <a href="/" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Főoldal</a>
                 <a href="/properties" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Ingatlanok</a>
                 <a href="/events" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Események</a>
-                <a href="/bookings" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Foglalások</a>
 
                 @if (Auth.IsLoggedIn)
                 {
-                    <a href="/bookings/create" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">Új foglalás</a>
-                    <a href="/about" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">Rólunk</a>
+                    <a href="/bookings/mine" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">📋 Foglalások</a>
+                    <a href="/about" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Rólunk</a>
                     <span class="px-3 py-2 text-amber-200 text-sm">👤 @Auth.CurrentUser?.UserName</span>
                     @if (Auth.IsAdmin)
                     {
                         <a href="/admin" class="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 font-bold">⚙️ Admin</a>
+                        <a href="/admin/bookings" class="px-3 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 font-bold">📋 Foglalások kezelése</a>
                     }
                     <a href="/logout" class="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-500 font-bold">Kijelentkezés</a>
                 }
                 else
                 {
+                    <a href="/about" class="px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">Rólunk</a>
                     <a href="/login" class="px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 font-bold">Bejelentkezés</a>
                     <a href="/register" class="px-3 py-2 rounded-lg bg-green-600 hover:bg-green-500 font-bold">Regisztráció</a>
                 }
@@ -46,27 +47,28 @@
         </div>
     </div>
 
-    <!-- Mobil menü – alapból rejtett, JS toggle-olja -->
+    <!-- Mobil menü -->
     <div id="mobileMenu" style="display:none; flex-direction:column;"
          class="md:hidden bg-amber-900 border-t border-amber-700 px-4 py-3 gap-1">
         <a href="/" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">🏠 Főoldal</a>
         <a href="/properties" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">🏡 Ingatlanok</a>
         <a href="/events" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">🎉 Események</a>
-        <a href="/bookings" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">📋 Foglalások</a>
 
         @if (Auth.IsLoggedIn)
         {
-            <a href="/bookings/create" class="block px-3 py-2 rounded-lg bg-amber-600 font-bold">➕ Új foglalás</a>
-            <a href="/about" class="block px-3 py-2 rounded-lg bg-amber-600 font-bold">ℹ️ Rólunk</a>
+            <a href="/bookings/mine" class="block px-3 py-2 rounded-lg bg-amber-600 font-bold">📋 Foglalások</a>
+            <a href="/about" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">ℹ️ Rólunk</a>
             <span class="block px-3 py-2 text-amber-200 text-sm">👤 @Auth.CurrentUser?.UserName</span>
             @if (Auth.IsAdmin)
             {
                 <a href="/admin" class="block px-3 py-2 rounded-lg bg-purple-600 font-bold">⚙️ Admin</a>
+                <a href="/admin/bookings" class="block px-3 py-2 rounded-lg bg-purple-600 font-bold">📋 Foglalások kezelése</a>
             }
             <a href="/logout" class="block px-3 py-2 rounded-lg bg-red-600 font-bold">🚪 Kijelentkezés</a>
         }
         else
         {
+            <a href="/about" class="block px-3 py-2 rounded-lg hover:bg-amber-700 font-medium">ℹ️ Rólunk</a>
             <a href="/login" class="block px-3 py-2 rounded-lg bg-amber-600 font-bold">🔑 Bejelentkezés</a>
             <a href="/register" class="block px-3 py-2 rounded-lg bg-green-600 font-bold">📝 Regisztráció</a>
         }
