@@ -5,7 +5,7 @@ VisualStudioVersion = 18.4.11620.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NagypapaHazaiBlazor", "NagypapaHazaiBlazor.csproj", "{277D6BFF-8B94-CE57-50B0-D9803BDAAE1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NagypapaHazai.API", "..\NagypapaHazai.API\NagypapaHazai.API.csproj", "{A188A76E-DDB7-40CB-A900-25764FBEA977}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NagypapaHazaiAPI", "..\NagypapaHazaiAPI\NagypapaHazaiAPI.csproj", "{383EAC96-4A45-49F9-A030-93AF7AA26BA6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{277D6BFF-8B94-CE57-50B0-D9803BDAAE1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{277D6BFF-8B94-CE57-50B0-D9803BDAAE1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{277D6BFF-8B94-CE57-50B0-D9803BDAAE1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A188A76E-DDB7-40CB-A900-25764FBEA977}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A188A76E-DDB7-40CB-A900-25764FBEA977}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A188A76E-DDB7-40CB-A900-25764FBEA977}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A188A76E-DDB7-40CB-A900-25764FBEA977}.Release|Any CPU.Build.0 = Release|Any CPU
+		{383EAC96-4A45-49F9-A030-93AF7AA26BA6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{383EAC96-4A45-49F9-A030-93AF7AA26BA6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{383EAC96-4A45-49F9-A030-93AF7AA26BA6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{383EAC96-4A45-49F9-A030-93AF7AA26BA6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
