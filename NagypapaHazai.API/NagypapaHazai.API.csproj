@@ -11,7 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\NagypapahazaiBlazor\NagypapaHazaiBlazor.csproj" />
+    <ProjectReference Include="..\NagypapaHazai.Shared\NagypapaHazai.Shared.csproj" />
+    <ProjectReference Include="..\NagypapahazaiBlazor\NagypapaHazaiBlazor.csproj" />
   </ItemGroup>
 
 </Project>
