@@ -1,21 +1,36 @@
 using Microsoft.EntityFrameworkCore;
-using NagypapaHazaiBlazor.Data;
+using NagypapaHazai.API.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// DbContext regisztráció (SQLite használata)
+builder.Services.AddDbContext<NagypapaHazaiContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<NagypapaContext>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
+// CORS beállítása, hogy a Blazor app hívhassa a végpontokat
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazor", policy =>
+    {
+        policy.WithOrigins("https://localhost:44369", "http://localhost:5000") // Ide a Blazor appod URL-jét tedd!
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Adatbázis automatikus létrehozása (csak fejlesztési célra!)
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<NagypapaHazaiContext>();
+    db.Database.EnsureCreated();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -23,9 +38,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowBlazor");
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

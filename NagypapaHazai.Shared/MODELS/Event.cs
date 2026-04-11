@@ -1,4 +1,6 @@
-﻿namespace NagypapaHazaiBlazor.MODELS
+﻿using NagypapaHazaiBlazor.MODELS;
+
+namespace NagypapaHazai.Shared.MODELS
 {
     public class Event
     {

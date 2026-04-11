@@ -1,7 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using NagypapaHazaiBlazor.MODELS;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace NagypapaHazaiBlazor.MODELS
+namespace NagypapaHazai.Shared.MODELS
 {
     public class EventRegistration
     {

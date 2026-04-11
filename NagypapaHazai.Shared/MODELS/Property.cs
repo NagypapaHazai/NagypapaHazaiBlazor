@@ -1,4 +1,4 @@
-﻿namespace NagypapaHazaiBlazor.MODELS
+﻿namespace NagypapaHazai.Shared.MODELS
 {
     public class Property
     {
@@ -8,6 +8,7 @@
         public string? Description { get; set; }
         public int? Capacity { get; set; }
         public string? Status { get; set; }
+        public int PricePerNight { get; set; }
         public string? ImageUrl { get; set; }       // ← ÚJ
         public DateTime CreatedAt { get; set; } = DateTime.Now; // ← ÚJ
 

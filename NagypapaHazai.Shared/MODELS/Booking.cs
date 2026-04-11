@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using NagypapaHazaiBlazor.MODELS;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace NagypapaHazaiBlazor.MODELS
+namespace NagypapaHazai.Shared.MODELS
 {
     public class Booking
     {

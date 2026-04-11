@@ -1,4 +1,4 @@
-﻿namespace NagypapaHazaiBlazor.MODELS
+﻿namespace NagypapaHazai.Shared.MODELS
 {
     public class User
     {
