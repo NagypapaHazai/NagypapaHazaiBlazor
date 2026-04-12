@@ -8,8 +8,8 @@
         public string? Description { get; set; }
         public int? Capacity { get; set; }
         public string? Status { get; set; }
-        public string? ImageUrl { get; set; }       // ← ÚJ
-        public DateTime CreatedAt { get; set; } = DateTime.Now; // ← ÚJ
+        public string? ImageUrl { get; set; }      
+        public DateTime CreatedAt { get; set; } = DateTime.Now; 
 
 
         // ÚJ MEZŐ – ide tudsz majd extra szöveges infót írni az ingatlanról

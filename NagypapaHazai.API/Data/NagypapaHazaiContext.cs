@@ -43,7 +43,6 @@ namespace NagypapaHazai.API.Data
                     Description = "Csendes kis faház az erdő közepén.",
                     Capacity = 10,
                     Status = "Aktív",
-                    PricePerNight = 25000,
                     ImageUrl = "",
                     ExtraInfo = "",
                     CreatedAt = new DateTime(2026, 1, 1) // Fix dátum kell az EF Core warning elkerüléséhez!
@@ -56,7 +55,6 @@ namespace NagypapaHazai.API.Data
                     Description = "Közvetlen vízparti élmény.",
                     Capacity = 6,
                     Status = "Aktív",
-                    PricePerNight = 35000,
                     ImageUrl = "",
                     ExtraInfo = "",
                     CreatedAt = new DateTime(2026, 1, 1)
@@ -69,7 +67,6 @@ namespace NagypapaHazai.API.Data
                     Description = "Hangulatos borház a dűlők között.",
                     Capacity = 4,
                     Status = "Aktív",
-                    PricePerNight = 20000,
                     ImageUrl = "",
                     ExtraInfo = "",
                     CreatedAt = new DateTime(2026, 1, 1)
