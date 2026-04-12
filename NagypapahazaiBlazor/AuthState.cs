@@ -35,7 +35,7 @@ namespace NagypapaHazaiBlazor.Services
         {
             get
             {
-                try { return Session?.GetString("Role") == "Admin"; }
+                try { return Session?.GetString("Role") == "admin"; }
                 catch { return false; }
             }
         }

@@ -74,7 +74,7 @@ else
                 <!-- Gomb a foglaláshoz -->
                 @if (!isBooked)
                 {
-                    <a href="/bookings/create" class="mt-auto block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm">
+                    <a href="/bookings/create?propertyId=@p.Id" class="mt-auto block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm">
                         Lefoglalom
                     </a>
                 }
