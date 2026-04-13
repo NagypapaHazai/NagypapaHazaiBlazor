@@ -52,6 +52,38 @@ namespace NagypapaHazaiBlazor.Data
             modelBuilder.Entity<Booking>()
                 .HasIndex(b => new { b.StartDate, b.EndDate })
                 .HasDatabaseName("IX_Bookings_Date");
+
+            modelBuilder.Entity<Property>().HasData(
+                new Property
+                    {
+                        Id = 1,
+                        Name = "Faház a Bakonyban",
+                        Location = "Bakony",
+                        // ... többi mező marad ugyanúgy ...
+                        ImageUrl = "/images/bakonyiHaz.png", // ← Ezt írd át!
+                        ExtraInfo = "",
+                        CreatedAt = new DateTime(2026, 1, 1)
+                    },
+                new Property
+                    {
+                        Id = 2,
+                        Name = "Vízparti Nyaraló",
+                        Location = "Balatonlelle",
+                        // ... többi mező marad ugyanúgy ...
+                        ImageUrl = "/images/balatoniHaz.png", // ← Ezt írd át!
+                        ExtraInfo = "",
+                        CreatedAt = new DateTime(2026, 1, 1)
+                    },
+                        // A 3. ingatlan (Villányi) ImageUrl-je maradhat üres string (""), ha ahhoz még nincs képed.
+                new Property
+                    {
+                        Id = 3,
+                        Name = "Villányi Vendégház",
+                        // ...
+                        ImageUrl = "",
+                        // ...
+                    }
+                );
         }
     }
 }

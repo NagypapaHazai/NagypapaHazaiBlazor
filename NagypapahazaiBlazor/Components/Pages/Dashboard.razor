@@ -120,9 +120,16 @@ else
                                         🟢 Ma Elérhető
                                     </div>
                                 }
-                                <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=400&h=300&fit=crop"
-                                     alt="@prop.Name"
-                                     class="w-full h-48 md:h-full object-cover" />
+                                @if (!string.IsNullOrWhiteSpace(prop.ImageUrl))
+                                {
+                                    <img src="@prop.ImageUrl" alt="@prop.Name" class="w-full h-48 md:h-full object-cover" />
+                                }
+                                else
+                                {
+                                    <div class="w-full h-48 md:h-full bg-gray-200 flex items-center justify-center">
+                                        <span class="text-gray-400">Nincs kép</span>
+                                    </div>
+                                }
                             </div>
                             <div class="p-6 md:w-2/3 flex flex-col">
                                 <h3 class="font-bold text-xl text-gray-800 mb-1">@prop.Name</h3>

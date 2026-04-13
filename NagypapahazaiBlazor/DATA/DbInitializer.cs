@@ -35,7 +35,7 @@ namespace NagypapaHazaiBlazor.Data
                     Description = "Hangulatos faház az erdő szélén.",
                     Capacity    = 10,
                     Status      = "available",
-                    ImageUrl    = "https://images.unsplash.com/photo-1518780664697-55e3ad937233",
+                    ImageUrl = "/images/bakonyiHaz.png",
                     CreatedAt   = DateTime.Now
                 },
                 new Property
@@ -45,7 +45,7 @@ namespace NagypapaHazaiBlazor.Data
                     Description = "Közvetlen vízparti nyaraló saját stéggel.",
                     Capacity    = 6,
                     Status      = "available",
-                    ImageUrl    = "https://images.unsplash.com/photo-1499793983690-e29da59ef1c2",
+                    ImageUrl = "/images/balatoniHaz.png",
                     CreatedAt   = DateTime.Now
                 },
                 new Property
@@ -55,7 +55,7 @@ namespace NagypapaHazaiBlazor.Data
                     Description = "Borospince feletti vendégház.",
                     Capacity    = 4,
                     Status      = "maintenance",
-                    ImageUrl    = "https://images.unsplash.com/photo-1510798831971-661eb04b3739",
+                    ImageUrl    = "images/villanyiHaz.png",
                     CreatedAt   = DateTime.Now
                 }
             };
