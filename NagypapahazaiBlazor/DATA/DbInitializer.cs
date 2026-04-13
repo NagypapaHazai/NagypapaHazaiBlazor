@@ -17,8 +17,8 @@ namespace NagypapaHazaiBlazor.Data
                 {
                     UserName = "admin",
                     Email = "admin@nagypapahazai.hu",
-                    // A jelszót hashelve mentjük el! Jelszó: Admin123!
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                    // A jelszót hashelve mentjük el! Jelszó: admin123
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
                     Role = "Admin"
                 };
 
