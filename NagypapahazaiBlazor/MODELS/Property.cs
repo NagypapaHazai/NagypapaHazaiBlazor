@@ -9,11 +9,14 @@
         public int? Capacity { get; set; }
         public string? Status { get; set; }
         public string? ImageUrl { get; set; }      
-        public DateTime CreatedAt { get; set; } = DateTime.Now; 
-
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         // ÚJ MEZŐ – ide tudsz majd extra szöveges infót írni az ingatlanról
         public string? ExtraInfo { get; set; }
+
+
+        
+    
 
 
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();

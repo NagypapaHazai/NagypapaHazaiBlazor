@@ -1,4 +1,5 @@
 ﻿@page "/properties"
+@rendermode InteractiveServer
 @using Microsoft.EntityFrameworkCore
 @using NagypapaHazaiBlazor.MODELS
 @using NagypapaHazaiBlazor.Data
@@ -6,6 +7,7 @@
 
 <h2 class="text-3xl font-bold mb-6">🏡 Ingatlanok</h2>
 
+@* Töltés közben spinner *@
 @if (properties is null)
 {
     <div class="flex justify-center items-center h-32">
@@ -19,94 +21,110 @@ else
         {
             bool isBooked = IsCurrentlyBooked(p);
 
-            <div class="bg-white rounded-xl shadow-md p-5 relative overflow-hidden border border-gray-100 flex flex-col">
+            <div class="bg-white rounded-xl shadow-md relative overflow-hidden border border-gray-100 flex flex-col">
 
-                <!-- Státusz jelző a jobb felső sarokban -->
-                @if (isBooked)
-                {
-                    <div class="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                        🔴 Foglalt
-                    </div>
-                }
-                else
-                {
-                    <div class="absolute top-4 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
-                        🟢 Elérhető
-                    </div>
-                }
-
-                <!-- Ezt a sort add hozzá a kártya elejére (a h3 fölé)! -->
+                @* Kép vagy szürke helykitöltő *@
                 @if (!string.IsNullOrWhiteSpace(p.ImageUrl))
                 {
-                    <img src="@p.ImageUrl" alt="@p.Name" class="w-full h-48 object-cover rounded-t-lg mb-3" />
+                    <img src="@p.ImageUrl" alt="@p.Name" class="w-full h-48 object-cover" />
                 }
                 else
                 {
-                    <!-- Opcionális: Alapértelmezett kép vagy üres hely, ha nincs megadva kép -->
-                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center rounded-t-lg mb-3">
+                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
                         <span class="text-gray-400">Nincs kép</span>
                     </div>
                 }
 
-                <h3 class="font-bold text-xl mb-2 pr-20 text-amber-900">@p.Name</h3>
+                <div class="p-5 flex flex-col flex-grow">
 
-                <p class="text-sm text-gray-600 mb-3">📍 @p.Location</p>
-                <p class="text-sm text-gray-700 mb-4 flex-grow">@p.Description</p>
+                    @* Státusz badge *@
+                    @if (isBooked)
+                    {
+                        <div class="absolute top-4 right-4 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                            🔴 Foglalt
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="absolute top-4 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+                            🟢 Elérhető
+                        </div>
+                    }
 
-                <div class="bg-amber-50 rounded-lg p-3 mb-4">
-                    <p class="text-sm text-amber-800 font-semibold">Kapacitás: @p.Capacity fő</p>
-                </div>
+                    <h3 class="font-bold text-xl mb-2 pr-20 text-amber-900">@p.Name</h3>
+                    <p class="text-sm text-gray-600 mb-3">📍 @p.Location</p>
+                    <p class="text-sm text-gray-700 mb-4 flex-grow">@p.Description</p>
 
-                <!-- Lenyíló fül: további infók -->
-                <button @onclick="() => ToggleDetails(p.Id)"
-                        class="w-full flex items-center justify-between text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-lg transition-colors mb-3">
-                    <span>További információk</span>
-                    <span class="text-xs">
-                        @(openPropertyId == p.Id ? "▲" : "▼")
-                    </span>
-                </button>
-
-                @if (openPropertyId == p.Id)
-                {
-                    <div class="mt-1 mb-3 border-t border-amber-100 pt-3 text-sm text-gray-700 space-y-2">
-                        @* Ha majd lesz külön ExtraInfo meződ, ide teheted: *@
-                        @if (!string.IsNullOrWhiteSpace(p.ExtraInfo))
-                        {
-                            <p>@p.ExtraInfo</p>
-                        }
-                        else
-                        {
-                            <ul class="list-disc list-inside text-xs text-gray-600 space-y-1">
-                                <li>Ingyenes parkolás az udvarban</li>
-                                <li>Háziállat hozható megbeszélés alapján</li>
-                                <li>Wi‑Fi, felszerelt konyha, szabadtéri sütögető</li>
-                            </ul>
-                        }
+                    <div class="bg-amber-50 rounded-lg p-3 mb-4">
+                        <p class="text-sm text-amber-800 font-semibold">Kapacitás: @p.Capacity fő</p>
                     </div>
-                }
 
-                <!-- Gomb a foglaláshoz -->
-                @if (!isBooked)
-                {
-                    <a href="/bookings/create?propertyId=@p.Id" class="mt-auto block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm">
-                        Lefoglalom
-                    </a>
-                }
-                else
-                {
-                    <button disabled class="mt-auto w-full text-center bg-gray-200 text-gray-500 font-bold py-2 rounded-lg cursor-not-allowed">
-                        Jelenleg nem foglalható
+                    @* Lenyíló gomb *@
+                    @{
+                        var propertyId = p.Id;
+                    }
+                    <button @onclick="() => ToggleDetails(p.Id)"
+                            class="w-full flex items-center justify-between text-sm font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-2 rounded-lg transition-colors mb-3">
+                        <span>További információk</span>
+                        <span class="text-xs">@(openProperties.Contains(p.Id) ? "▲" : "▼")</span>
                     </button>
-                }
+                    @* Lenyíló tartalom *@
+                    @if (openProperties.Contains(p.Id))
+                    {
+                        <div class="mt-1 mb-3 border-t border-amber-100 pt-3 text-sm text-gray-700 space-y-2">
+                            @if (!string.IsNullOrWhiteSpace(p.ExtraInfo))
+                            {
+                                <p>@p.ExtraInfo</p>
+                            }
+                            else
+                            {
+                                <ul class="list-disc list-inside text-xs text-gray-600 space-y-1">
+                                    <li>Ingyenes parkolás az udvarban</li>
+                                    <li>Háziállat hozható megbeszélés alapján</li>
+                                    <li>Wi‑Fi, felszerelt konyha, szabadtéri sütögető</li>
+                                </ul>
+                            }
+                        </div>
+                    }
+
+                    @* Foglalás gomb *@
+                    @if (!isBooked)
+                    {
+                        <a href="/bookings/create?propertyId=@p.Id"
+                           class="mt-auto block w-full text-center bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-lg transition-colors shadow-sm">
+                            Lefoglalom
+                        </a>
+                    }
+                    else
+                    {
+                        <button disabled class="mt-auto w-full text-center bg-gray-200 text-gray-500 font-bold py-2 rounded-lg cursor-not-allowed">
+                            Jelenleg nem foglalható
+                        </button>
+                    }
+
+                </div>
             </div>
         }
     </div>
 }
 
 @code {
+    // Ingatlanok listája (null = még töltődik)
     private List<Property>? properties;
-    private int? openPropertyId; // melyik ingatlan lenyílója van nyitva
 
+    // Melyik ingatlan lenyílója van nyitva (null = egyik sem)
+    private HashSet<int> openProperties = new();
+
+    private void ToggleDetails(int id)
+    {
+        Console.WriteLine($"ToggleDetails meghívva: {id}");
+        if (openProperties.Contains(id))
+            openProperties.Remove(id);
+        else
+            openProperties.Add(id);
+    }
+
+    // Oldal betöltésekor fut le – lekéri az ingatlanokat a foglalásaikkal együtt
     protected override async Task OnInitializedAsync()
     {
         properties = await Db.Properties
@@ -114,15 +132,9 @@ else
             .ToListAsync();
     }
 
-    private void ToggleDetails(int id)
-    {
-        if (openPropertyId == id)
-            openPropertyId = null;   // ha újra rákattint, csukjuk be
-        else
-            openPropertyId = id;     // különben ezt nyitjuk ki
-    }
+    // Lenyíló nyitása/zárása – ugyanarra kattintva bezárja, másikra nyitja
 
-    // Ez a függvény megnézi, hogy a mai napon éppen ki van-e adva az ingatlan
+    // Megvizsgálja, hogy az ingatlan ma foglalt-e
     private bool IsCurrentlyBooked(Property p)
     {
         if (p.Bookings == null || !p.Bookings.Any()) return false;
@@ -131,18 +143,15 @@ else
 
         foreach (var b in p.Bookings)
         {
+            // Csak a jóváhagyott foglalásokat nézi
             if (b.Status?.ToLower() == "approved")
-            {
                 if (DateTime.TryParse(b.StartDate.ToString(), out DateTime start) &&
                     DateTime.TryParse(b.EndDate.ToString(), out DateTime end))
-                {
+                    // Ha a mai nap a foglalás időszakán belül van → foglalt
                     if (start.Date <= today && end.Date >= today)
-                    {
                         return true;
-                    }
-                }
-            }
         }
+
         return false;
     }
 }
